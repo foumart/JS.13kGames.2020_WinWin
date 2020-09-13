@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=0" />
+	<meta name="mobile-web-app-capable" content="yes">
+	<!-- build:ios -->
+	<meta name="apple-mobile-web-app-capable" content="yes">
+	<link rel="apple-touch-icon" href="icon_180.png">
+	<!-- endbuild -->
+	<link rel="icon" type="image/png" sizes="any" href="icon_180.png">
+	<link rel="manifest" href="mf.webmanifest">
+
+	<title>WinWin</title>
+	
+	<!-- build:social -->
+	<meta name="description" content="WinWin. Developed by Noncho Savov, FoumartGames © 2020. 13 kilobytes JavaScript Web App by Noncho Savov. Submission in JS13K Games competition 2020." />
+	<meta name="keywords" content="game, javascript, js, html5, js13k, canvas" />
+	
+	<meta name="author" content="Noncho Savov" />
+	<meta name="copyright" content="Copyright © 2020 by Noncho Savov. All Rights Reserved." />
+	<meta name="application-name" content="WinWin" />
+	
+	<meta name="twitter:card" content="summary" />
+	<meta name="twitter:title" content="WinWin" />
+	<meta name="twitter:description" content="WinWin. Developed by Noncho Savov, FoumartGames © 2020. 13 kilobytes JavaScript Web App by Noncho Savov. Submission in JS13K Games competition 2020." />
+	<meta name="twitter:image" content="https://www.foumartgames.com/games/JS13k2020/icon_224.png"/>
+	<!-- endbuild -->
+
+	<meta name="monetization" content="$twitter.xrptipbot.com/FoumartGames">
+	
+	<!-- build:css -->
+	<link rel="stylesheet" href="styles/style.css">
+	<!-- endbuild -->
+</head>
+
+<body>
+	
+	<div id="game">
+		<canvas id="backgroundCanvas" width="1080" height="1620"></canvas>
+		<canvas id="gameCanvas" width="1080" height="1620"></canvas>
+		<canvas class="pixelated" id="effectsCanvas" width="216" height="324"></canvas>
+		<div id="titletop"></div>
+		<div id="titlebottom"></div>
+		<div id="menu"></div>
+		<div id="overlay">
+			<div id="central"></div>
+		</div>
+		<div id="controls">
+			<!-- <div>Game by Foumart</div> -->
+			<div class="button" id="left"></div>
+			<div class="button" id="center"></div>
+			<div class="button" id="right"></div>
+		</div>
+		
+		<!-- <canvas id="menuCanvas" width="960" height="1200" style="visibility:hidden"></canvas> -->
+	</div>
+
+	<!-- <div id="controls" class="unselectable">
+		&nbsp; <u>POWERUPS:</u>
+		<br/>&nbsp; <b>(P)</b>&nbsp; Weapon Powerup
+		<br/>&nbsp; <b>(H)</b> +50 health (increases max health at full hp)
+		<br/>&nbsp; <b>(M)</b>&nbsp; Increases missle speed and decreases interval between shots
+		<br/>&nbsp; <b>(S)</b>&nbsp; Increases ship speed
+		<br/><br/>&nbsp; <u>CONTROLS:</u>
+		<br/>&nbsp; <b>[Arrow Keys]</b>&nbsp; Movement
+		<br/>&nbsp; <b>[Space Key]</b>&nbsp; Switch Weapons
+		<br/>&nbsp; <b>[R Key]</b>&nbsp; Restart Game
+		<br/>&nbsp; <b>[P Key]</b>&nbsp; Pause Game&nbsp;
+	</div> -->
+
+	<!-- build:js -->
+	<script src="scripts/classes/Missile.js"></script>
+	<script src="scripts/classes/PlayerMissile.js"></script>
+	<script src="scripts/classes/PlayerBlob.js"></script>
+	<script src="scripts/classes/PlayerCannon.js"></script>
+	<script src="scripts/classes/PlayerLaser.js"></script>
+	<script src="scripts/classes/EnemyMissile.js"></script>
+	<script src="scripts/app.js"></script>
+	<script src="scripts/main.js"></script>
+	
+	<!-- endbuild -->
+	
+</body>
+</html>
+
+<!-- Developed by Noncho Savov -->
+<!-- https://www.foumartgames.com -->
