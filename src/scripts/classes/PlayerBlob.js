@@ -22,7 +22,7 @@ class PlayerBlob extends Missile {
 		effectsCtx.globalAlpha = 0.5;
 		effectsCtx.fillStyle = this.darkColor;
 		effectsCtx.beginPath();
-		effectsCtx.arc(this.x/5, this.y/5, 3+this.size/10+pwr/5, 0, Math.PI*2);
+		effectsCtx.arc(this.x/5, this.y/5, this.size/2+pwr/5, 0, Math.PI*2);
 		effectsCtx.fill();
 		effectsCtx.strokeStyle = this.lightColor;
 		effectsCtx.lineWidth = 1+pwr/2;
