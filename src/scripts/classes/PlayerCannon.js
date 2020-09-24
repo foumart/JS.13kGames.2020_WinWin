@@ -15,8 +15,8 @@ class PlayerCannon extends Missile {
 
 		effectsCtx.beginPath();
 		effectsCtx.globalAlpha = 0.1*(this.pulse>-1?this.pulse:10);
-		effectsCtx.arc(this.x/this.s, this.y/this.s+(this.pulse>-1?this.pulse:this.blowSize), 1+Math.random(), 0, Math.PI*2);
 		effectsCtx.fillStyle = this.lightColor;
+		effectsCtx.arc(this.x/this.s, this.y/this.s+(this.pulse>-1?this.pulse:this.blowSize), 1+Math.random(), 0, Math.PI*2);
 		effectsCtx.fill();
 		effectsCtx.closePath();
 		effectsCtx.strokeStyle = this.darkColor;
