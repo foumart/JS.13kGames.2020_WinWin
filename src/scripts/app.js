@@ -1,6 +1,9 @@
 // register ServiceWorker
-var debug;
-window.addEventListener("load", () => {
+var debug = false;
+
+window.addEventListener("load", registerSW);
+
+function registerSW(e){
 	if ("serviceWorker" in navigator) {
 		navigator.serviceWorker.getRegistrations().then((registrations) => {
 			let isRegistered;
@@ -9,9 +12,8 @@ window.addEventListener("load", () => {
 			}
 			if (isRegistered) {
 				if (debug) console.log("ServiceWorker already registered");
-				init();
 			} else {
-				navigator.serviceWorker.register("serviceworker.js", {updateViaCache: "none"}).then(() => {
+				navigator.serviceWorker.register("service_worker.js", {updateViaCache: "none"}).then(() => {
 					if (debug) console.log("ServiceWorker registered successfully");
 				}).catch(() => {
 					if (debug) console.log("ServiceWorker registration failed");
@@ -28,6 +30,6 @@ window.addEventListener("load", () => {
 		});
 	} else {
 		if (debug) console.log("ServiceWorker not found in navigator");
-		window.addEventListener("load", init);
+		init();
 	}
-});
+}
