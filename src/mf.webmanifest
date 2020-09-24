@@ -2,13 +2,16 @@
 	"name": "WinWin",
 	"start_url": "index.html",
 	"serviceworker": {
-		"src":"service_worker.js"
+		"src":"service_worker.js",
+		"scope": "/",
+		"type": "",
+		"update_via_cache": "none"
 	},
 	"icons": [
 		{
-			"src":"ico.png",
+			"src":"icon_224.png",
 			"type":"image/png",
-			"sizes":"224x224",
+			"sizes":"224x224"
 		}
 	],
 	"display": "fullscreen",
