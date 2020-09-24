@@ -1,5 +1,3 @@
-//import { Missile } from './Missile.js';
-
 class PlayerMissile extends Missile {
 	
 	constructor(x, y, angle, speed, size, pwr) {
@@ -22,9 +20,9 @@ class PlayerMissile extends Missile {
 		ctx.restore();
 
 		effectsCtx.beginPath();
-		effectsCtx.globalAlpha=0.75;
-		effectsCtx.arc(this.pulse>-1?-4+Math.random()*8:this.x/size, this.pulse>-1?-4+Math.random()*8:this.y/size+8, 2+Math.random()*2, 0, Math.PI*2);
+		effectsCtx.globalAlpha = 0.75;
 		effectsCtx.fillStyle = this.lightColor;
+		effectsCtx.arc(this.pulse>-1?-4+Math.random()*8:this.x/size, this.pulse>-1?-4+Math.random()*8:this.y/size+8, 2+Math.random()*2, 0, Math.PI*2);
 		effectsCtx.fill();
 		effectsCtx.closePath();
 		effectsCtx.strokeStyle = this.darkColor;
