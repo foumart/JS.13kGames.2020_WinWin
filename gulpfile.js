@@ -17,7 +17,7 @@ const replaceOptions = { logs: { enabled: false } };
 
 const thirteenKb = 13 * 1024; // filesize limit
 
-const title = "Win/Win";
+const title = "WinWin";
 const debug = false; // debug service worker messages
 
 const gameContainer = 'gameContainer';
@@ -61,7 +61,7 @@ function mini(cb) {
 		.pipe(minify({ noSource: true }))
 		.pipe(concat('temp.js'))
 		.pipe(replace('var debug;', 'var debug = ' + debug + ';', replaceOptions))
-		.pipe(replace('serviceworker.js', 'sw.js', replaceOptions))
+		.pipe(replace('service_worker.js', 'sw.js', replaceOptions))
 		//.pipe(replace(gameContainer, 'window.' + gameContainer, replaceOptions))
 		.pipe(closureCompiler({
 			compilation_level: 'ADVANCED_OPTIMIZATIONS',
@@ -120,6 +120,7 @@ function pack(cb) {
 		.pipe(replace('"', '', replaceOptions))
 		.pipe(replace('rep_cs', '<style>' + fs.readFileSync('tmp/temp.css', 'utf8') + '</style>', replaceOptions))
 		.pipe(replace('rep_js', '<script>' + fs.readFileSync('tmp/temp.js', 'utf8') + '</script>', replaceOptions))
+		.pipe(replace('document.s', 'document.monetization', replaceOptions))
 		.pipe(concat('index.html'))
 		.pipe(dest('public/'))
 		.on("end", cb);
