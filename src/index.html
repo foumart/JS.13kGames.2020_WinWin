@@ -3,6 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
+    <meta name="monetization" content="$ilp.uphold.com/MwfgyiykYARL">
 	<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=0" />
 	<meta name="mobile-web-app-capable" content="yes">
 	<!-- build:ios -->
@@ -27,8 +28,6 @@
 	<meta name="twitter:description" content="WinWin. Developed by Noncho Savov, FoumartGames © 2020. 13 kilobytes JavaScript Web App by Noncho Savov. Submission in JS13K Games competition 2020." />
 	<meta name="twitter:image" content="https://www.foumartgames.com/games/JS13k2020/icon_224.png"/>
 	<!-- endbuild -->
-
-	<meta name="monetization" content="$twitter.xrptipbot.com/FoumartGames">
 	
 	<!-- build:css -->
 	<link rel="stylesheet" href="styles/style.css">
@@ -37,7 +36,7 @@
 
 <body>
 	
-	<div id="game">
+	<div id="game" class="unselectable">
 		<canvas id="backgroundCanvas" width="1080" height="1620"></canvas>
 		<canvas id="gameCanvas" width="1080" height="1620"></canvas>
 		<canvas class="pixelated" id="effectsCanvas" width="216" height="324"></canvas>
@@ -53,22 +52,7 @@
 			<div class="button" id="center"></div>
 			<div class="button" id="right"></div>
 		</div>
-		
-		<!-- <canvas id="menuCanvas" width="960" height="1200" style="visibility:hidden"></canvas> -->
 	</div>
-
-	<!-- <div id="controls" class="unselectable">
-		&nbsp; <u>POWERUPS:</u>
-		<br/>&nbsp; <b>(P)</b>&nbsp; Weapon Powerup
-		<br/>&nbsp; <b>(H)</b> +50 health (increases max health at full hp)
-		<br/>&nbsp; <b>(M)</b>&nbsp; Increases missle speed and decreases interval between shots
-		<br/>&nbsp; <b>(S)</b>&nbsp; Increases ship speed
-		<br/><br/>&nbsp; <u>CONTROLS:</u>
-		<br/>&nbsp; <b>[Arrow Keys]</b>&nbsp; Movement
-		<br/>&nbsp; <b>[Space Key]</b>&nbsp; Switch Weapons
-		<br/>&nbsp; <b>[R Key]</b>&nbsp; Restart Game
-		<br/>&nbsp; <b>[P Key]</b>&nbsp; Pause Game&nbsp;
-	</div> -->
 
 	<!-- build:js -->
 	<script src="scripts/classes/Missile.js"></script>
@@ -77,8 +61,8 @@
 	<script src="scripts/classes/PlayerCannon.js"></script>
 	<script src="scripts/classes/PlayerLaser.js"></script>
 	<script src="scripts/classes/EnemyMissile.js"></script>
-	<script src="scripts/app.js"></script>
 	<script src="scripts/main.js"></script>
+	<script src="scripts/app.js"></script>
 	
 	<!-- endbuild -->
 	
