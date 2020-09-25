@@ -4,12 +4,12 @@
    Just type a random string here to ensure update: qweqweqhdfhdfh
 */
 
-var version = "JS13k_0.9";
+var version = "JS13k_0.91";
 var debug;
 //var logfetches;
 var name = "[SW] "+version+": ";
 
-if (debug) console.log(name+"%cService Worker initialized", "color:#3333cc");
+if (debug) console.log(name+"%cService Worker script initialized", "color:#3333cc");
 
 /* The install event fires when the service worker is first installed.
    You can use this event to prepare the service worker to be able to serve
