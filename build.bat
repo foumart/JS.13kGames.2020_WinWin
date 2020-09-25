@@ -1,0 +1,1 @@
+START cmd.exe /k "echo Deleting old public... && (if exist public rmdir public /q /s) && echo Packeging... && gulp && (if exist tmp rmdir tmp /q /s)"
