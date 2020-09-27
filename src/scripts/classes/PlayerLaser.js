@@ -1,7 +1,5 @@
-//import { Missile } from './Missile.js';
-
 class PlayerLaser extends Missile {
-	
+
 	constructor(x, y, angle, speed, size, pwr, id) {
 		super(id, x, y, angle, speed, size, pwr);
 		this.lightColor = "#99ff99";
@@ -35,12 +33,12 @@ class PlayerLaser extends Missile {
 		effectsCtx.fillStyle = this.lightColor;
 		effectsCtx.rect(this.x/5-Math.random()*pwr/2, this.y/5-Math.random()*5 - (this.pulse==-1 ? 0 : 6), pwr/2, (this.pulse==-1 ? 9 : 3) + Math.random()*5);
 		effectsCtx.rect(this.x/5-Math.random()*pwr/4, this.y/5-Math.random()*5 - (this.pulse==-1 ? 0 : 6), pwr/4, (this.pulse==-1 ? 9 : 3) + Math.random()*5);
-		
+
 		effectsCtx.fill();
-		effectsCtx.closePath();
 		effectsCtx.strokeStyle = this.darkColor;
 		effectsCtx.lineWidth = 2;
 		effectsCtx.stroke();
 		effectsCtx.globalAlpha = 1;
+		effectsCtx.closePath();
 	}
 }
