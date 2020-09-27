@@ -4,7 +4,7 @@
    Just type a random string here to ensure update: qweqweqhdfhdfh
 */
 
-var version = "JS13k_0.91";
+var version = "JS13k_0.92";
 var debug;
 //var logfetches;
 var name = "[SW] "+version+": ";
@@ -55,7 +55,7 @@ self.addEventListener("activate", (event) => {
 	   Activation will fail unless the promise is fulfilled.
 	*/
 	if(debug) console.log(name+"%cActivate version: " + version, "color:#3333cc");
-	
+
 	event.waitUntil(
 		// This method returns a promise which will resolve to an array of available cache keys.
 		caches.keys().then((cacheNames) => {
@@ -107,7 +107,7 @@ self.addEventListener("fetch", (event) => {
 				});
 				//if(report) console.log(report[0], report[1]);
 				return response;
-			});	
+			});
 		})
 	);
 });
