@@ -1,13 +1,15 @@
 # JS.13kGames.2020_WinWin
 
-Brief game Description: In WinWin you control a spaceship and fight alien invaders. Each time you destroy an enemy you fix a bad sector from the harddrive. Some files from the game itself are missing too, so you have to search tenaciously in order to find the missing data. When you do so, a new spaceship will be unloacked, giving you the oportunity to try a new weapon.
+In WinWin you control a spaceship and fight alien invaders. Each time you destroy an enemy you restore a deleted file from the harddrive. Some files from the game itself are missing too, so you have to search throughout the 12 stages to find the missing data. When you do so, a new spaceship will be unloacked, giving you the oportunity to try a new weapon.
 
-Controls: [Arrow Keys] [A] [D] Movement
+Why are there so many deleted files from this harddrive? Well, it looks like someone attempted to top the high score in Lose/Lose..
 
-Shortcuts: [R] Reset game, [F] Fullscreen, [P] Pause
+Controls: [Arrow Keys] [A] [D] Movement; [Space] Shoot; [C] Toggle shooting
+
+Shortcuts: [R] Reset game, [F] Fullscreen, [P][Esc] Pause
 
 
-The game was inspired by the famous Lose/Lose game that randomly deletes files from the player's machine.
+Inspired by the Lose/Lose concept - a game that randomly deletes files from your machine on every killed invader.
 
 
 How to set up build on Windows:
