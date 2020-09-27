@@ -1,5 +1,5 @@
 class PlayerMissile extends Missile {
-	
+
 	constructor(x, y, angle, speed, size, pwr) {
 		super(4, x, y, angle, speed, size, pwr);
 		this.lightColor = "#ff9944";
@@ -22,11 +22,11 @@ class PlayerMissile extends Missile {
 		effectsCtx.beginPath();
 		effectsCtx.globalAlpha = 0.75;
 		effectsCtx.fillStyle = this.lightColor;
-		effectsCtx.arc(this.pulse>-1?-4+Math.random()*8:this.x/size, this.pulse>-1?-4+Math.random()*8:this.y/size+8, 2+Math.random()*2, 0, Math.PI*2);
+		effectsCtx.arc(this.x/this.s + (this.pulse>-1?-4+Math.random()*8:0), this.y/this.s + 8 + (this.pulse>-1?-4+Math.random()*8:0), 2+Math.random()*2, 0, Math.PI*2);
 		effectsCtx.fill();
-		effectsCtx.closePath();
 		effectsCtx.strokeStyle = this.darkColor;
 		effectsCtx.stroke();
 		effectsCtx.globalAlpha=1;
+		effectsCtx.closePath();
 	}
 }
