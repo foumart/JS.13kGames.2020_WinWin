@@ -1,7 +1,5 @@
-//import { Missile } from './Missile.js';
-
 class PlayerCannon extends Missile {
-	
+
 	constructor(x, y, angle, speed, size, pwr, id) {
 		super(id, x, y, angle, speed, size, pwr);
 		this.lightColor = !this.type ? "#ffdd33" : "#cc9900";
@@ -18,10 +16,10 @@ class PlayerCannon extends Missile {
 		effectsCtx.fillStyle = this.lightColor;
 		effectsCtx.arc(this.x/this.s, this.y/this.s+(this.pulse>-1?this.pulse:this.blowSize), 1+Math.random(), 0, Math.PI*2);
 		effectsCtx.fill();
-		effectsCtx.closePath();
 		effectsCtx.strokeStyle = this.darkColor;
 		effectsCtx.stroke();
 		effectsCtx.globalAlpha = 1;
+		effectsCtx.closePath();
 
 		ctx.rotate(Math.radians((this.pulse>-1 ? random()*360 : this.angle) % 360));
 		drawUnit(ctx, 0, id, !this.type ? 1+parseInt(pwr/2) : id, 0, 0, 12, true);
