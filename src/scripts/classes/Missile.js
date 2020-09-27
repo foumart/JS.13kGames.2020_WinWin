@@ -1,5 +1,5 @@
 class Missile {
-	
+
 	constructor(type, x, y, angle, speed, size, pwr) {
 		this.type = type;
 		this.pwr = pwr;
@@ -31,6 +31,5 @@ class Missile {
 			['red', 'green', '#4499cc', 'red'][missile.type],
 			alpha
 		);
-			
 	}
 }
