@@ -1,7 +1,5 @@
-//import { Missile } from './Missile.js';
-
 class PlayerBlob extends Missile {
-	
+
 	constructor(x, y, angle, speed, size, pwr, id) {
 		super(id, x, y, angle, speed, size, pwr);
 		this.lightColor = "#ccccff";
@@ -10,7 +8,7 @@ class PlayerBlob extends Missile {
 	}
 
 	draw(drawUnit, ctx,id, effectsCtx){
-		
+
 		if (this.pulse == -1) {
 			ctx.save();
 			ctx.translate(this.x, this.y);
@@ -19,15 +17,15 @@ class PlayerBlob extends Missile {
 			ctx.restore();
 		}
 
+		effectsCtx.beginPath();
 		effectsCtx.globalAlpha = 0.5;
 		effectsCtx.fillStyle = this.darkColor;
-		effectsCtx.beginPath();
 		effectsCtx.arc(this.x/5, this.y/5, this.size/2+pwr/5, 0, Math.PI*2);
 		effectsCtx.fill();
 		effectsCtx.strokeStyle = this.lightColor;
 		effectsCtx.lineWidth = 1+pwr/2;
 		effectsCtx.stroke();
-		effectsCtx.closePath();
 		effectsCtx.globalAlpha = 1;
+		effectsCtx.closePath();
 	}
 }
