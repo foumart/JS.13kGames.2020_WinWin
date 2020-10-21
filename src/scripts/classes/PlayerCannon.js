@@ -1,9 +1,7 @@
 class PlayerCannon extends Missile {
 
-	constructor(x, y, angle, speed, size, pwr, id) {
-		super(id, x, y, angle, speed, size, pwr);
-		this.lightColor = !this.type ? "#ffdd33" : "#cc9900";
-		this.darkColor = !this.type ? "#6688bb" : "#ffbb22";
+	constructor(x, y, angle, speed, size, pwr, id, clr1, clr2) {
+		super(id, x, y, angle, speed, size, pwr, clr1, clr2);
 		this.blowSize = 8;
 	}
 
