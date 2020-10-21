@@ -1,6 +1,6 @@
 class Missile {
 
-	constructor(type, x, y, angle, speed, size, pwr) {
+	constructor(type, x, y, angle, speed, size, pwr, darkColor = "109", lightColor = "32c") {
 		this.type = type;
 		this.pwr = pwr;
 		this.x = x;
@@ -11,8 +11,8 @@ class Missile {
 		this.currentSize = size;
 		this.pulse = -1;
 		this.blowSize = 10;
-		this.darkColor = "#110099";
-		this.lightColor = "#3322cc";
+		this.darkColor = "#"+darkColor;
+		this.lightColor = "#"+lightColor;
 		this.s = 5;
 	}
 
@@ -24,11 +24,11 @@ class Missile {
 
 	blow(drawExplosion, alpha) {
 		drawExplosion(
-			missile.x/this.s,// - missile.size/this.s*2,
-			missile.y/this.s,// - missile.size/this.s*2,
+			missile.x/this.s,
+			missile.y/this.s,
 			missile.size * missile.pulse / this.s,
-			['yellow', 'cyan', '#66ccff', 'yellow'][missile.type],
-			['red', 'green', '#4499cc', 'red'][missile.type],
+			this.lightColor,
+			this.darkColor,
 			alpha
 		);
 	}

@@ -6,30 +6,77 @@ html, body {
 
 #game {
 	overflow: hidden;
+	font-family: Lucida console;
+	font-size: 40px;
+	font-weight: bold;
+	color: darkgrey;
+}
+
+.bar {
+	box-sizing: border-box;
+	height: 40px;
+	width: 100%;
+	transition: width 0.5s;
+	border: 5px solid #333;
+	background-color: #111;
+}
+#healthbar{
+	width:0;
+	background-color: #6a6;
+	border: 5px solid #393;
+}
+#shieldbar{
+	width:0;
+	position: relative;
+	background-color: #66e;
+	border: 5px solid #038;
+	opacity: 0.75;
+	height: 30px;
+	top: 5px;
+	left: 5px;
 }
 
 .button {
 	width: 35%;
 	height: 100%;
+	background-color: #222;
 }
-#center {
-	margin-left: 35%;
+#centralBtn {
+	margin-left: 34%;
 }
-#right {
+#rightBtn {
 	margin-left: 65%;
 }
 
 #controls {
-	bottom: 0;
 	height: 15.625%;
 	width: 100%;
-	display: none;
+	bottom: -300px;
+	transition: bottom 0.25s;
+}
+
+.uiBtn {
+	cursor: pointer;
+	width: 180px;
+	height: 80px;
+	right: 40px;
+	top: 30px;
+	padding: 5px;
+	padding-left: 10px;
+	font-size: 40px;
+	border: 10px solid #555;
+	background-color: black;
+}
+.uiBtn:hover {
+	color: #ccc;
+	border-color: #666;
 }
 
 #menu, #overlay {
 	width: 100%;
 	height: 100%;
 	background-image: linear-gradient(to bottom, rgba(0,0,0,1), rgba(0,0,0,0), rgba(0,0,0,0), rgba(0,0,0,1));
+	transition: opacity 0.1s;
 }
 .saturate, #menu {
 	filter: saturate(0.25);
@@ -44,14 +91,15 @@ html, body {
 #central {
 	margin-top: 600px;
 	margin-left: 30px;
-	font-family: Lucida console;
-	font-size: 40px;
-	font-weight: bold;
-	color: darkgrey;
-	width: 90%;
+	
+	width: 96%;
 }
 .smalltext {
 	font-size: 15px;
+}
+.hugetext {
+	width: 1000px;
+	font-size: 60px;
 }
 .brokenimage {
 	transform: scale(2);
@@ -63,6 +111,7 @@ html, body {
 .image {
 	width: 120px;
 	height: 120px;
+	cursor: pointer;
 }
 #hard{
 	width: 1010px;
@@ -89,19 +138,6 @@ html, body {
 	transition: opacity 0.2s, transform 0.2s;
 }
 
-#left {
-	background-color: green;
-}
-
-#center {
-	background-color: yellow;
-	width: 30%;
-}
-
-#right {
-	background-color: green;
-}
-
 #backgroundCanvas {
 
 }
@@ -111,8 +147,8 @@ html, body {
 }
 
 .t{transform:rotate(45deg);}
-.b{background-color:#306bff;border:solid 9px;border-color:#f59 #840 #630 #b6f;}
-.r{background-color:#ff306b;border:solid 9px;border-color:#f59 #840 #630 #b6f;}
+.b{background-color:#306bff;border:solid 9px;border-color:#98e #34A #236 #aaf;}
+.r{background-color:#ff306b;border:solid 9px;border-color:#f6a #840 #630 #f9e;}
 
 .pixelated {
 	image-rendering: -moz-crisp-edges;

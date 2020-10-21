@@ -1,9 +1,7 @@
 class PlayerLaser extends Missile {
 
-	constructor(x, y, angle, speed, size, pwr, id) {
-		super(id, x, y, angle, speed, size, pwr);
-		this.lightColor = "#99ff99";
-		this.darkColor = "#ccffcc";
+	constructor(x, y, angle, speed, size, pwr, id, clr1, clr2) {
+		super(id, x, y, angle, speed, size, pwr, clr1, clr2);
 		this.blowSize = 6;
 		this.img = id==6;
 	}

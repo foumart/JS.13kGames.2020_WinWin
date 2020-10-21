@@ -37,20 +37,26 @@
 <body>
 
 	<div id="game" class="unselectable">
-		<canvas id="backgroundCanvas" width="1080" height="1620"></canvas>
+		<canvas id="bgrCanvas" width="1080" height="1620"></canvas>
 		<canvas id="gameCanvas" width="1080" height="1620"></canvas>
 		<canvas class="pixelated" id="effectsCanvas" width="216" height="324"></canvas>
 		<div id="titletop"></div>
 		<div id="titlebottom"></div>
 		<div id="menu"></div>
 		<div id="overlay">
+			<div class=uiBtn onclick=toggleFullscreen(1)>Full&nbsp;<span id=uiFsc style=margin:-4px>⮔</span><br>Screen</div>
+			<div class=uiBtn onclick=mute() style=right:280px>Mute&nbsp;<span id=uiSnd style=margin:9px>🔉</span><br>Sound</div>
+			<!-- 🔇🔈🔉 ⮔ ⬚ ⬥ ⬦⬨-->
 			<div id="central"></div>
 		</div>
 		<div id="controls">
 			<!-- <div>Game by Foumart</div> -->
-			<div class="button" id="left"></div>
-			<div class="button" id="center"></div>
-			<div class="button" id="right"></div>
+			<div class="button" id="leftBtn"></div>
+			<div class="button" id="centralBtn"></div>
+			<div class="button" id="rightBtn"></div>
+			<div class="bar"></div>
+			<div class="bar" id="healthbar"></div>
+			<div class="bar" id="shieldbar"></div>
 		</div>
 	</div>
 

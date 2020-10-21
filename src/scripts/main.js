@@ -11,7 +11,7 @@ let overlay = document.getElementById("overlay");
 let central = document.getElementById("central");
 let controls = document.getElementById("controls");
 
-let bgrCanvas = document.getElementById("backgroundCanvas");
+let bgrCanvas = document.getElementById("bgrCanvas");
 let gameCanvas = document.getElementById("gameCanvas");
 let effectsCanvas = document.getElementById("effectsCanvas");
 
@@ -20,9 +20,15 @@ let gameContext = gameCanvas.getContext("2d");
 gameContext.imageSmoothingEnabled = false;
 let effectsContext = effectsCanvas.getContext("2d");
 
-let leftBtn = document.getElementById("left");
-let centralBtn = document.getElementById("center");
-let rightBtn = document.getElementById("right");
+let leftBtn = document.getElementById("leftBtn");
+let centralBtn = document.getElementById("centralBtn");
+let rightBtn = document.getElementById("rightBtn");
+
+let healthbar = document.getElementById("healthbar");
+let shieldbar = document.getElementById("shieldbar");
+
+let uiFsc = document.getElementById("uiFsc");
+let uiSnd = document.getElementById("uiSnd");
 
 let baseWidth = 1080;
 let baseHeight = 1920;
@@ -87,6 +93,9 @@ let constantShoot = false;
 let running = true;
 let playing;
 let step = 0;
+let slowing = 0;
+let slowCount = 0;
+
 let online = (window.location.protocol == "http:" || window.location.protocol == "https:");
 
 let size = 5;// value in Missile.js as well
@@ -95,6 +104,7 @@ let starSpeed;
 let level = 0;
 let complete = 0;
 let score = 0;
+var gameOver = 0;
 
 // itteration objects
 let missiles = [];
@@ -106,6 +116,7 @@ let powerup;//tmp object
 let effects = [];
 let effect;//tmp effect
 let allSprites = [];
+let enemyMissiles = [];
 
 let arrays,
 	colorArr,
@@ -121,7 +132,8 @@ let arrays,
 	healthmaxiniArr,
 	shieldmaxArr,
 	shieldmaxiniArr,
-	poweredArr;
+	poweredArr,
+	killedArr;
 
 let powerupsArray = shuffle([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,2,3,4,5,6]);
 let startArray = shuffle([0,1,0,0,3,0,0,2,0,0,0,4,5]);
@@ -146,20 +158,25 @@ let shipWeapons =           [
 	'Rocket',
 	'Blaster',
 	'Zapper',
-	'Beam', 'Plasma', 'Fusion', 'Launcher', 'Railgun'];
-
-let shipTitles = [
-	'Raptor', 'Rogue', 'Viper', 'Nightflyer', 'Valkyre', 'Hunter', 'Discoverer', 'Scout', 'Wraith', 'Rocinante', 'Phoenix', 'Coil'
+	'Plasma',
+	'Ion',
+	'Fusion',
+	'Beam',
+	'Railgun'
 ];
 
-let shipNames =             ['A', 'G', 'L', 'Y', 'V', 'T', 'X', 'S', 'W', 'O', 'F', 'C'];
+let shipTitles = [
+	'Raptor', 'Rogue', 'Viper', 'Valkyre', 'Behemoth', 'Hunter', 'Explorer', 'Scout', 'Wraith', 'Spectrum', 'Phoenix', 'Coil'
+];
+
+let shipNames =              ['A', 'G', 'L', 'Y', 'V', 'T', 'X', 'S', 'W', 'R', 'F', 'C'];
 
 function resetStats(arrays) {//    1    2    3    4    5    6    7    8    9    10   11
 	arrays = [//              ^    ^^   |    ()   A    8    |    /\
-		indexArr =           [1,   4,   3,   2,   5,   6,   7,  10,   15,  3,   9,   11 ],
-		colorArr =           [1,   1,   3,   1,   4,   2,   3,   4,   1,   1,   4,   1  ],
+		indexArr =           [1,   4,   3,   2,   5,   11,  13,  6,   12,  9,   3,   8  ],  // 16
+		colorArr =           [1,   1,   3,   1,   4,   2,   4,   3,   2,   4,   1,   1  ],  // 4
 
-		powerArr =           [1,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   1  ],
+		powerArr =           [1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1  ],
 		shipradiusArr =      [70,  75,  60,  70,  80,  70,  75,  60,  80,  78,  80,  78 ],
 		shipspeedArr =       [6,   5,   5.5, 5,   4,   4.5, 6,   6.5, 4,   5,   4.5, 7  ],
 		missilespeedArr =    [20,  15,  40,  12,  3,   20,  25,  30,  8,   16,  6,   18 ],
@@ -193,8 +210,8 @@ function updateStats(){
 }
 updateStats();
 
-let effectColors1 = ['yellow', 'yellow', 'cyan', '#66ccff', 'red', 'yellow'];
-let effectColors2 = ['red', 'red', 'green', '#4499cc','yellow', 'red'];
+let darkColors = ["f32", "c60", "cfc", "ccf", "f94", 'red', 'red', 'green', '#4499cc','yellow', 'red'];
+let lightColors = ["b96", "f92", "9f9", "88d", "952", 'yellow', 'yellow', 'cyan', '#66ccff', 'red', 'yellow'];
 
 let len;
 
@@ -210,10 +227,9 @@ let spriteColors = [
 let ship1 = "@@@@@H@@@@@Y@@@@Hc@@@@HL@@@@Yi@@@@ai@@@HKm@@@HK}\`@@Ysb\`@@Ya}Y@@YamY@HcVcV@Hca}V@HbamVAqRJZYNXcsAQcaddMX\\l}\tHcYl}L@cscm\\@X\\e\\C@HckC@@@Y\\@@@@XC@@";
 let ship2 = "@@@@@P@@@@@P@@@@@J@@@@Pa@@@@Jt@@@Paf@@BbvT@PUtfJ@jJvTPP|bfBPZ}YV@PboYV@PqwaNRJiobN}My\tNRJiobV@PqwYfBPboJvTPZ}UtfJPlWavT@JlJtf@@bUaR@@PlR@@@@R@@";
 let spriteData =  "@@@@@@@@@@@@@@hD@@@@~u@@@@|g@@@X|gC@@P|gB@@P}oB@@K~wY@@Z~wS@@ZvwS@@YvwK@@YunK@@YunK@@ZtfS@@ZtfS@@KlfY@@Pk^B@@\`k]D@@@k]@@@@c]@@@@\`D@@@@@@@@@@@@@@";
-	spriteData += ship1 + ship2 + ship1 + ship2 + ship1 + ship2 + ship1 + ship2 + ship2 + ship1;
-	ship1.split('').reverse().join('');
-	spriteData += ship1 + ship2 + ship1 + ship2 + ship1 + ship2 + ship1 + ship2 + ship1 + ship2 + ship1 + ship2 + ship1;
-
+for (let i = 0; i < 23; i++){
+	spriteData += i%2==0 || i==5 ? ship1 : ship2;
+}
 // background stars
 let bgrSmall = [];
 let bgrMiddle = [];
@@ -233,7 +249,7 @@ function moveStar(star) {
 
 function moveBgr() {
 	starSize = 1;
-	starSpeed = playing ? 1 : 0.3;
+	starSpeed = playing ? 1 - (slowCount*0.035) : 0.3;
 	bgrSmall.forEach(moveStar);
 	starSize = 2;
 	bgrMiddle.forEach(moveStar);
@@ -246,6 +262,11 @@ let sprites = [];
 let spritesMirrored = [];
 let images = [];
 let imagesMirrored = [];
+
+let stages = [
+	[200, 400],
+	[]
+];
 
 function init(){
 	buffer();
@@ -271,9 +292,80 @@ function init(){
 
 	standalone = window.matchMedia('(display-mode: standalone)').matches;
 	if(standalone) console.log("[Event] Game is running as Standalone PWA.");
-
+	if(!FX.initialized) FX.start();
 	overlay.focus();
 }
+
+// SoundFX, sound effects
+let FX = (function(){
+	let audioContext;
+	let oscTypes = ["sawtooth", "square", "triangle", "sine"];
+	let initialized;
+	// start frequency HZ
+	// frequency change in time + / -
+	// length (number of frames taking to play the sound)
+	// oscillator type 0 - 3
+	// starting delay (milliseconds of timeout before the sound starts)
+	// volume 0.0 - 1.0
+	function playSound(_freq, _incr, _length, _type, _delay, _vol){
+
+		if(!audioContext) return;
+
+		let oscillator = audioContext.createOscillator(); // instantiate a new oscillator
+		oscillator.type = oscTypes[_type];
+
+		let modulationGain = audioContext.createGain(); // instantiate modulation for sound volume control
+		modulationGain.gain.value = 0; // set the initial volume to 0 to prevent an ugly tick noise at the beginning
+
+		let i = 0;// frame counter
+		if(_delay) setTimeout(playTune, _delay); else playTune();
+
+		function playTune(){
+			if(!_vol) return;
+			if(!i){
+				oscillator.connect(modulationGain).connect(audioContext.destination);
+				oscillator.start();
+				// make sure to stop the sound from playing in the background (when the tab is inactive)
+				oscillator.stop(audioContext.currentTime+(_length-i)/60);
+			} else modulationGain.gain.value = (i<4?0.05*i*i:1-i/_length) * _vol * d.volume;
+			oscillator.frequency.value = _freq + _incr * i;
+			if(i++ < _length) requestAnimationFrame(playTune);
+		}
+	}
+
+	let d = {volume:1, initialized:initialized, start:function(){
+		try {
+			audioContext = new (
+				window.AudioContext ||
+				window.webkitAudioContext ||
+				window.mozAudioContext ||
+				window.msAudioContext ||
+				window.oAudioContext
+			)();
+			this.initialized = 1;
+			console.log("[Event] AudioContext initialized");
+		} catch(e){
+			console.log("[Warning] AudioContext not found",e);
+		}
+	}};
+
+	// stage starting sound, w:length
+	d.d=function(w,d){playSound(90, 9, 10+w*10, 1, d||0, 0.05); playSound(30, 3, 20+w*10, 1, d||0, 0.1); playSound(90, 5, 20+w*10, 2, d||0, 0.2)};
+
+	// 0:bunny die, 1-4:bunny jump
+	d.b=function(w){
+		playSound(220, -9 * (w*w||1), 40/w|0||1, 2, w*60, 0.2 - (w?0.14+w/80:0));
+		playSound(90*(w||1), -9, 9, 1, w*60, 0.2 - (w?0.14+w/80:0));
+	};
+
+	// level complete or super bunny jump
+	d.c=function(w,l,d){playSound(300-90*w*w, 9*w, (l||8)*w, 2-(w/2|0), (d||0)+(w-1)*(l/2||8), 0.1-w*0.02);};
+
+	// custom //_type, _freq, _incr, _length, _delay, _vol
+	d.p=function(w,f,i,l,d,v){playSound(f||120, i||10, l||50, w||0, d, v||0.1);};
+
+	return d;
+})();
 
 function checkMonetization() {
 	if(document.monetization){
@@ -285,14 +377,13 @@ function checkMonetization() {
 				if (!monet) {
 					monet = 1;
 					updateStats();
-					state = 0;
 					central.innerHTML = "";
 					showMenu(1);
 				}
 			}
 		);
 	} else {
-		console.log("[Event] Monetization not found");
+		//console.log("[Event] Monetization not found");
 		if(step < 100)
 			requestAnimationFrame(checkMonetization);
 	}
@@ -323,9 +414,6 @@ function buffer() {
 		images.push(colorSprites);
 		imagesMirrored.push(colorSpritesMirrored);
 	}
-
-	menu.children[0].style.display = 'none';
-	menu.children[1].style.display = 'none';
 }
 
 function drawImage(id, clr, colors, z, r, a, w) {
@@ -366,16 +454,20 @@ function getSpriteCanvas(w, h, add){
 }
 
 function drawUnit(ctx, i, id, clr, spd, x, y, z, s) {
+	let c = i>8 ? -1 : 1;
 	let S = s || 1;
 	let X1 = s ? x-12*S : x-6;
 	let X2 = s ? x : x-6;
-	let Y1 = y + (!spd ? s==1?0:i<6?S+1:id==7?-2:2 : ((step/spd)|0)%4==0?S:((step/spd)|0)%2==0?-S:0);
-	let Y2 = y + (i>7 && id<8? 2 : i<8&&id>6 ? 2 : s==1?0:2) + (!spd ? 0 : ((step/spd)|0)%4==0?-S:((step/spd)|0)%2==0?S:0)-1;
-
+	let Y1 = y + (!spd ? s==1?0:i<7?S+1:id==7?-2:2 : ((step/spd)|0)%4==0?S:((step/spd)|0)%2==0?-S:0);
+	let Y2 = y + (i>7&&id<8 ? s==1?2:S+2 : i<8&&id>6 ? s==1?2:S*2+2 : s==1?0:i>5?-2:2) + (!spd ? 0 : ((step/spd)|0)%4==0?-S:((step/spd)|0)%2==0?S:0)-1;
+	if (!spd && clr) {
+		Y1 += leftPressed?2:rightPressed?-2:0;
+		Y2 += leftPressed?-2:rightPressed?2:0;
+	}
 	ctx.save();
-    if(i>7) ctx.scale(1, -1);
-	ctx.drawImage(z ? images[id][clr] : imagesMirrored[id][clr], X1, Y1*(i>7?-1:1), 12*S, (i>7?-1:1)*24*S);
-	ctx.drawImage(z ? imagesMirrored[id][clr] : images[id][clr], X2, Y2*(i>7?-1:1), 12*S, (i>7?-1:1)*24*S);
+	ctx.scale(1, c);
+	ctx.drawImage((z || i == 5 || i == 11) && i != 8 ? images[id][clr] : imagesMirrored[id][clr], X1, Y1*c, 12*S, 24*c*S);
+	ctx.drawImage((z || i == 5 || i == 11) && i != 8 ? imagesMirrored[id][clr] : images[id][clr], X2, Y2*c, 12*S, 24*c*S);
 	ctx.restore();
 }
 
@@ -389,8 +481,12 @@ function drawShip() {
 	gameContext.strokeStyle = invulnerable && step%2==0 ? '#f03': '#03f';
 	gameContext.stroke();
 	gameContext.closePath();
-	gameContext.globalAlpha = 1;
+	gameContext.globalAlpha = (invulnerable?(step/2|0)%2?0.25:0.75:1);
 	drawUnit(gameContext, weaponType, indexArr[weaponType], colorArr[weaponType], 0, shipX, shipY - shipRadius + (weaponType>8 ? 20 : 0), indexArr[weaponType]>6, size);
+	gameContext.globalAlpha = 1;
+	// draw explosions if player ship has been destroyed
+	if (health <= 0 && invulnerable%2 == 0)
+		addEffect({x:shipX, y:shipY, size:shipRadius}, weaponType, 1, 9+random(5), 5);
 }
 
 function drawShipMenu(container, i = 1, id = 1, clr = 3) {
@@ -406,47 +502,35 @@ function drawShipMenu(container, i = 1, id = 1, clr = 3) {
 
 function transitionMenu(top, bottom){
 	for(let i = 0; i <  menu.children.length; i++){
-		if (i > menu.children.length/2-3)
+		if (i > menu.children.length/2-5)
 			menu.children[i].style.transform = `translateY(${top}px)`;
 		else
 			menu.children[i].style.transform = `translateY(${bottom}px)`;
 	}
-	titletop.style.transform = `translateY(${bottom<-400?bottom-250:bottom==-60?top:bottom+250}px)`;
-	titlebottom.style.transform = `translateY(${top>400?top+250:top==60?bottom:top-250}px)`;
+	titletop.style.transform = `translateY(${bottom<-460?bottom-90:!bottom?top:bottom+310}px)`;
+	titlebottom.style.transform = `translateY(${top>400?top+210:!top?bottom:top-190}px)`;
 }
 function showMenu(skip){
-	if (skip) menuCount = 0;
-	transitionMenu(skip?150:250, skip?-175:-275);
+	state = 0;
+	transitionMenu(skip?90:190, skip?-235:-335);
 	if(!skip) setTimeout(
 		() => {
 			titletop.style.zIndex = 1;
 			titlebottom.style.zIndex = 1;
-			transitionMenu(170, -190);
+			transitionMenu(110, -250);
 		}, 750
-	);
-	if(!skip) setTimeout(
-		() => (updatePiece(titlebottom.children[9], 532, 933, 20), updatePiece(titletop.children[8], 480, 865, 20)),
-		1000
-	);
-	if(!skip) setTimeout(
-		() => (updatePiece(titletop.children[11], 598, 867, 20), updatePiece(titlebottom.children[12], 650, 935, 20)),
-		1150
 	);
 	setTimeout(
 		() => {
-			updatePiece(titlebottom.children[9], 525, 930, 40);
-			updatePiece(titlebottom.children[12], 645, 930, 40);
-			updatePiece(titletop.children[11], 605, 850, 40);
-			updatePiece(titletop.children[8], 485, 850, 40);
-			transitionMenu(550, -450);
+			transitionMenu(550, -510);
 
 			let brk = '<br>';
 			let html = "Pick a ship: &nbsp;<span id=shipname>" + shipTitles[weaponType] + "</span>" + brk + brk;
 			let cut;
 			for(let j = 0; j < 2; j++) {
 				for(let i = 0; i < 6; i++) {
-					let image = `<img class='brokenimage smalltext' src='./' width='60' height='60'>`;
-					html += `<div class='image' style='left:${160*i+60}px;margin-top:${j?220:0}px'>`;
+					let image = `<img class='brokenimage smalltext' src='./' width=60 height=60>`;
+					html += `<div class=image style='left:${160*i+60}px;margin-top:${j?220:0}px'>`;
 					if (!powerArr[j*6 + i]) {
 						if(!cut) cut = j*6 + i;
 						html += image.replace("./'", `' style='margin-top:36px;margin-left:36px;' alt=' &nbsp; &nbsp; &nbsp;${shipNames[j*6+i]}\n&nbsp;.png'`) + image + image;
@@ -473,6 +557,7 @@ function showMenu(skip){
 
 			setTimeout(() => {
 				if(!menuCount) menuCount = 1;
+				state = 1;
 				animateMenuCursor();
 			}, 100);
 
@@ -482,7 +567,7 @@ function showMenu(skip){
 
 function animateMenuCursor(){
 	gameContext.clearRect(0, 0, bgrCanvas.width, bgrCanvas.height);
-	if(!state) {
+	if(state == 1) {
 		if (menuCount) {
 			menuCount ++;
 			let k = menuID < 6 ? menuID : menuID - 6;
@@ -499,28 +584,37 @@ function animateMenuCursor(){
 	} else gameContext.setLineDash([]);
 }
 
-function updatePiece(element, left, top, height, width){
-	if (width) {
-		element.style.width = width + 'px';
-		element.style.height = height + 'px';
-		element.style.left = left + 'px';
-		element.style.top = top + 'px';
-	}
-}
-
 function pickMenu(evt) {
-	if (!state) {
-		let weaponCheck = evt!=-1&&evt ? Array.from(evt.target.parentNode.parentNode.children).indexOf(evt.target.parentNode)-3 : menuID;
+	reloadOnGameOver();
+	if (evt) {
+		if(evt.target) {
+			let map = {
+				btnl: 37,
+				btnr: 39,
+				esc: 27,
+				ent: 13
+			};
+			if(map[evt.target.id]){
+				triggerKey(map[evt.target.id]);
+				return;
+			}
+			if(evt.target.className != "image pixelated") return;
+		}
+	}
+	if (state == 1) {
+		let weaponCheck = evt != -1 && evt ? Array.from(evt.target.parentNode.parentNode.children).indexOf(evt.target.parentNode)-3 : menuID;
 		if (evt && weaponType != weaponCheck) {
-			weaponType = weaponCheck;
-			menuID = weaponType;
-			updateMenuID();
-			updateStats();
+			if(powerArr[weaponCheck]) {
+				weaponType = weaponCheck;
+				menuID = weaponType;
+				updateMenuID();
+				updateStats();
+			}
 			return;
 		}
 		weaponType = menuID;
 		updateStats();
-		state = 1;
+		state = 2;
 		let bar = (limit, total = 8) => {
 			let lmt = limit;
 			let dif = total - limit;
@@ -539,43 +633,44 @@ function pickMenu(evt) {
 			return str;
 		};
 		let brk = '<br>';
-		let html = "&nbsp; SHIP:&nbsp <span id=shipname>" + shipTitles[weaponType] + "</span>" + brk;
-		html += "&nbsp; ____ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;Stage: " + (level+1) + brk + brk;
+		let html = `<div class=hugetext>SHIP:&nbsp;<span id=shipname>${shipTitles[weaponType]}</span>
+						<div style=position:relative;width:420px;float:right;text-align:center>${shipWeapons[weaponType]+brk}<span style=top:40px;position:relative;font-size:50px>Level: ${powerArr[weaponType]}</span></div>
+					</div>`;
+		html += "<div style=line-height:52px;top:25px;>______" + brk + brk;
 		html += "Health: "+bar((weaponType == 2 ? 5 : healthMax-60) / 5) + brk;
 		html += "Shield: "+bar(1 + shieldMax / 5) + brk;
 		html += "&nbsp;Speed: "+bar(parseInt((shipSpeed-3.5))*2) + brk;
-		html += "&nbsp; Size: " + bar(1+parseInt((shipRadius-50) / 6)) + brk + brk + brk + brk + brk;
-		html += "Weapon: " + shipWeapons[weaponType] + brk + brk;
-		html += "Level: " + powerArr[weaponType] + " / 6" + brk + brk;
-		html += "&nbsp; &nbsp; &nbsp;<div id='buttons'>[ < ][ > ][ ESC ]</div>"+brk+brk+"<div id='proceed'>[ SPACE / ENTER ]</div>";
+		html += "&nbsp; Size: " + bar(1+parseInt((shipRadius-50) / 6));
+		html += "</div>";
+
+		html += "<div style=left:50px;top:650px id='btnl'>[ < ]</div><div style=top:650px;left:174px id='btnr'>[ > ]</div><div style=top:650px;left:297px id='esc'>[ ESC ]</div>";
+		html += "<div style=left:50px;top:700px; id='ent'>[ SPACE / ENTER ]</div>";
+		html += "</div>";
 
 		central.innerHTML = html;
 
 		let canvas = drawShipMenu(central, weaponType, indexArr[weaponType], colorArr[weaponType])[0];
-		canvas.style.left = "55%";
-		canvas.style.top = "45%";
+		canvas.style.left = "58%";
+		canvas.style.marginTop = "300px";
 		canvas.style.width = "400px";
 		canvas.style.height = "400px";
-
-	} else if(state == 4 && !playing)
-		reset(true);
-	else if(state == 3) {
-		if (evt && evt.offsetX < 420) leftTap(); else if (evt && evt.offsetX > 680) rightTap();
-	}
-	else
+	} else
 		hideMenu();
 }
 
 function hideMenu(){
-	state = 2;
 	titletop.style.opacity = 0;
 	titlebottom.style.opacity = 0;
-	transitionMenu(60, -60);
+	transitionMenu(0, -120);
 	central.innerHTML = "";
 	playing = true;
+	state = 3;
 	setTimeout(
 		()=>{
-			transitionMenu(900, -900);
+			transitionMenu(840, -960);
+			generateButtons();
+			controls.style.display = 'block';
+			controls.style.bottom = 0;
 			setTimeout(hideTitle, 250);
 		}, 250
 	);
@@ -589,11 +684,19 @@ function hideTitle(){
 
 function startGame() {
 	generate();
-	state = 3;
+	state = 4;
 	effectsCanvas.style.opacity = 1;
 	bgrCanvas.style.opacity = 1;
 	addEventListeners();
 	controls.style.display = 'block';
+
+	updateUI();
+	//FX.d(5, 1);
+}
+
+function updateUI() {
+	healthbar.style.width = 100 * (health / healthMax) + '%';
+	shieldbar.style.width = 99 * (shield / shieldMax) + '%';
 }
 
 function generateMenu() {
@@ -605,6 +708,12 @@ function generateMenu() {
 	];
 	drawTitle(titletop, titleArr, 125, 810, 20, "t r");
 	drawTitle(titlebottom, titleArr, 125, 810, 20, "t b");
+}
+
+function generateButtons() {
+	drawTitle(leftBtn, [[[2,4], [0,6], [2,8]]], 100, 30, 20, "t b");
+	drawTitle(rightBtn, [[[2,4], [4,6], [2,8]]], 150, 30, 20, "t b");
+	drawTitle(centralBtn, [[[4,2], [6,4], [2,4]]], 60, 70, 20, "t r");
 }
 
 function drawTitle(container, titleArr, baseLeft, baseTop, scale, className){
@@ -651,14 +760,25 @@ function fullscreenCheck(e){
 // -----------------
 function toggleFullscreen(e){
 	if(e==1) fullscreenCanceled = fff;
-	let d = document.documentElement;//document.msFullscreenElement
+	let d = document.documentElement;
 	if (!(document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement))
 		(d.requestFullscreen || d.mozRequestFullScreen || d.webkitRequestFullScreen ||
-			d.webkitRequestFullScreen(Element.ALLOW_KEYBOARD_INPUT)/*|| d.msRequestFullscreen*/).call(d);
+			d.webkitRequestFullScreen(Element.ALLOW_KEYBOARD_INPUT)).call(d);
 	else if(document.exitFullscreen) document.exitFullscreen();
 	else if(document.mozCancelFullScreen) document.mozCancelFullScreen();
 	else if(document.webkitCancelFullScreen) document.webkitCancelFullScreen();
-	//else if(document.msExitFullscreen) document.msExitFullscreen();
+	uiFsc.innerHTML = fff ? '⮔' : '';
+}
+
+function mute(){
+	if(FX.volume){
+		FX.volume=0;
+		uiSnd.innerHTML = '🔈';
+	} else {
+		FX.volume=1;
+		FX.c(3,2);
+		uiSnd.innerHTML = '🔉';
+	}
 }
 
 function resize(e){
@@ -666,8 +786,8 @@ function resize(e){
 	resizeStage(e);
 }
 function resizeStage(e){
-	width = document.documentElement["clientWidth"];
-	height = document.documentElement["clientHeight"];
+	width = document.documentElement.clientWidth;
+	height = document.documentElement.clientHeight;
 	game.style.transform = "scale("+getScale()+")";
 	game.style.width = baseWidth + "px";
 	game.style.height = baseHeight + "px";
@@ -698,14 +818,10 @@ function rightTap() {
 }
 
 function updateMenuID(plusOrMinus = 1){
-	let count = 50;
-	while(!powerArr[menuID] && count>0){
-		if(menuID!= 11 || (menuID==11 && !monet))
-			menuID += plusOrMinus;
-		if(menuID < 0) menuID = powerArr.length-(monet?1:2);
-		if(menuID > powerArr.length-1) menuID = 0;
-		count--;
-	}
+	if(!powerArr[menuID] || (menuID==11 && !monet)) menuID += plusOrMinus;
+	if(menuID < 0) menuID = powerArr.length+(menuID==11 && !monet?1:0) + menuID;
+	if(menuID > powerArr.length-1) menuID = menuID-powerArr.length+(menuID==11 && !monet?1:0);
+	if(!powerArr[menuID]) menuID = 0;
 	let shipname = document.getElementById('shipname');
 	if (shipname)
 		shipname.innerHTML = shipTitles[menuID];
@@ -714,7 +830,6 @@ function updateMenuID(plusOrMinus = 1){
 function reset(nextLevel) {
 	if (nextLevel) level ++;
 	playing = false;
-	state = 0;
 	central.innerHTML = '';
 	titletop.style.opacity = 1;
 	titlebottom.style.opacity = 1;
@@ -735,93 +850,116 @@ function togglePause(forcePause) {
 	}
 }
 
-function keyDownHandler(e) {
+function keyDownHandler(e) {console.log(state, e.keyCode);
+	triggerKey(e.keyCode);
+}
 
-	if(e.keyCode == 70){
+function triggerKey(key) {
+	// F
+	if(key == 70){
 		toggleFullscreen();
 	}
 
-	if(!state || state == 1) {
-		if(e.keyCode == 13 || e.keyCode == 32) pickMenu();
+	// ENTER/ SPACE
+	if(key == 13 || key == 32) {
+		reloadOnGameOver();
+		if(state == 1 || state == 2)
+			pickMenu();
 	}
 
 	// R
-	if(state == 4 || e.keyCode == 82) {
+	if(state == 5 || key == 82) {
 		if(!running) togglePause();
-		if(e.keyCode == 82 || e.keyCode == 13 || e.keyCode == 80 || e.keyCode == 27) {
-			reset(state == 4);
+		else if(key == 82 || key == 13 || key == 80 || key == 27) {
+			reset(state == 5);
 		}
 		return;
 	}
 
-	/*if(e.keyCode == 49) {
+	// 1
+	if(key == 49) {
 		if(pwr<6) {
 			pwr ++;
 			powerArr[weaponType] ++;
 			console.log("pwr:"+pwr);
 		}
 		updateStats();
-	}*/
+	}
 
-	/*if(e.keyCode == 50) {
+	// 2
+	if(key == 50) {
 		changeWeapons();
-	}*/
+	}
 
-	/*if(e.keyCode == 51) {
+	/*if(key == 51) {
 		debugger;
 	}*/
 
-	if(e.keyCode == 32 && state == 3) {
+	// SPACE
+	if(key == 32 && state == 4) {
 		spacePressed = true;
 	}
 
-	if(e.keyCode == 67) {
+	// C
+	if(key == 67 && state == 4) {
 		constantShoot = !constantShoot;
 	}
 
-	if(e.keyCode == 39 || e.keyCode == 68) {
-		rightPressed = true;
-		if(state<2) {
+	// D
+	if(key == 39 || key == 68) {
+		if(state<3) {
 			menuID ++;
 			updateMenuID();
 			updateStats();
-			if(state==1) {state=0;pickMenu();}
-		}
+			if(state==2) {state=1;pickMenu();}
+		} else
+			rightPressed = true;
 	}
-	if(e.keyCode == 37 || e.keyCode == 65) {
-		leftPressed = true;
-		if(state<2) {
+
+	// A
+	if(key == 37 || key == 65) {
+		if(state<3) {
 			menuID --;
 			updateMenuID(-1);
 			updateStats();
-			if(state==1) {state=0;pickMenu();}
-		}
+			if(state==2) {state=1;pickMenu();}
+		} else
+			leftPressed = true;
 	}
-	if(e.keyCode == 38 || e.keyCode == 87) {
-		//upPressed = true;
-		if(state<2) {
+
+	// W
+	if(key == 38 || key == 87) {
+		if(state<3) {
 			menuID -=6;
 			updateMenuID(-1);
 			updateStats();
-			if(state==1) {state=0;pickMenu();}
-		}
+			if(state==2) {state=1;pickMenu();}
+		}// else upPressed = true;
 	}
-	if(e.keyCode == 40 || e.keyCode == 83) {
-		//downPressed = true;
-		if(state<2) {
+
+	// S
+	if(key == 40 || key == 83) {
+		if(state<3) {
 			menuID += 6;
 			updateMenuID();
 			updateStats();
-			if(state==1) {state=0;pickMenu();}
-		}
+			if(state==2) {state=1;pickMenu();}
+		}// else downPressed = true;
 	}
-	if(e.keyCode == 80 || e.keyCode == 27) {
-		if(state == 1) {
-			state = 0;
+
+	// P, ESC
+	if(key == 80 || key == 27) {
+		if(state == 2){
 			central.innerHTML = '';
 			showMenu(1);
-		} else if(state == 3) {
-			togglePause();
+		} else if (state > 3) {
+			reloadOnGameOver();
+			if(running)
+				running = false;
+			else {
+				running = true;
+				requestAnimationFrame(draw);
+			}
 		}
 	}
 }
@@ -844,7 +982,7 @@ function keyUpHandler(e) {
 	}
 }
 
-/*function changeWeapons(){
+function changeWeapons(){
 	if(!changeTime){
 		changeTime = changeTimeLimit;
 		weaponType ++;
@@ -862,7 +1000,7 @@ function keyUpHandler(e) {
 		shield = shieldMax;
 		missileCurrentCount = missileInterval;
 	}
-}*/
+}
 
 function generate() {
 
@@ -875,49 +1013,90 @@ function generate() {
 	perfect = true;
 
 	let count = 0;
-	let limit = (pwr<3?1:level);
-	let high, type, poly, enemy;
+	for(let j = 0; j < 2; j++) {
+		for(let i = 0; i < stages[level][0]; i++) {
+			let x = ((i % 10) > 5 ? -600 + (i % 10) * 120 : 0) * (!j?1:-1) + (!j?0:1080);
+			let t = parseInt(i/10) * 50 + ((i % 10) > 8 ? 1000 : 0);
+			let a = (i % 10) > 7 ?  i%3==0 ? 1 : 0.25 : 0.25;
+			let type = (i % 10) > 7 ? 8 : 2;
+			let poly = 0;
+			let hp = 50;
+			let size = 10;
+			let collision = 10;
+			let anim = 0;
+			let speed = 2;
+			if (!level) {
+				if (!j) {
+					type = i % 2 == 0 ? 0 : i % 4 == 0 ? 0 : 1 + parseInt(random()*4) - 1;
+					poly = (!type) ? 5 + parseInt(random()*3) : 1;
+					hp = (!type) ? poly==5 ? 2 : 4 : 5*type + type * type;
+					size = (!type) ? poly==5 ? 25 : 35 : 70;
+					collision = size + (!type ? poly==5 ? 10 : 5 : 0);
+					speed = type>2 ? 1.5 : type == 2 ? 1.5 : type + 2 + (poly==5 ? 2+random()*3 : 0);
+					anim = 5 + type*2;
+					a = 1;
+					x = (type > 2) ? 50 + (count++)*60 : parseInt(gameCanvas.width*0.05+random() * gameCanvas.width * 0.9);
+					t = (type > 2) ? 1000 + count*2 : 10 * i * 5;
+					if (type>2) {
+						powerup = {
+							a:       0,
+							type:    (powerups.length<startArray.length ? startArray[powerups.length] : powerupsArray[powerups.length-startArray.length] || 0),
+							size:    40,
+							speed:   2+random()*2
+						};
+						powerups.push(powerup);
+					}
+					if(type > 2) count ++;
+				}
+			}
+			else if (level==2)
+				type = 8;
 
-	for(let i = 0; i < 100+50*limit; i++) {
-		high = i<75 ? 1+parseInt(random()*2) : 1 + parseInt(random()*(1+limit));
-		type = i % 2 || i < 20 || (i>90&&i%3==0) ? 0 : high;
-		poly = (!type) ? 5 + parseInt(random()*3) : 1;
-		enemy = [
-			parseInt(type),                                // enemy type
-			poly,                                          // for mines - number of polygons
-			(!type) ? poly==5 ? 2 : 4 : type + 5*type + type * type,   // health
-			(!type) ? 25 : 70,                             // size
-			type == 2 ? 1.5 : (limit==1?1:type) + 1 + level*0.2 + (poly==5 ? 2+random()*3 : 1)        // speed
-		];
-
-		if (enemy[0] && count-startArray.length < powerupsArray.length) {
-			high = (count<startArray.length ? startArray[count++] : powerupsArray[count++-startArray.length]);
-			powerup = {
-				txt:     "."+['png','mov','jpg','doc','gif','avi','mp3','wav','rar','zip','bin','iso','dat','mp4','ico','bmp','txt','pdf','exe'][parseInt(random()*17.9)],
-				a:       0,
-				type:    high,
-				size:    40,
-				speed:   high ? 2+random()*2 : 1
-			};
-			powerups.push(powerup);
+			if(!j || level) {
+				if(random() > 0.25)
+					enemies.push({
+					a:         0,     // enemy exploding counter
+					type:      type,  // type
+					x:         x,
+					y:         -120,
+					z:         poly,  // for mines - the number of polygons
+					health:    hp,
+					maxHealth: hp,
+					size:      size,
+					collision: collision,
+					speed:     speed,
+					animation: anim,
+					timeout:   t,
+					color:     !level ? 2 : 0,
+					alpha:     a,
+					cargo:     !level && !j && type>2 ? powerups.length-1 : 0
+				});
+			}
 		}
+	}
 
-		enemies.push({
-			a:         0,         // enemy exploding
-			type:      enemy[0],  // type
-			x:         parseInt(gameCanvas.width*0.05+random() * gameCanvas.width * 0.9),
-			y:        -150,
-			z:         enemy[1],  // for mines - the number of polygons
-			color:     2,
-			health:    enemy[2],
-			maxHealth: enemy[2],
-			size:      enemy[3],
-			speed:     enemy[4],
-			animation: 5 + enemy[0]*2,
-			timeout:   10 * i * 5 * (i > 100 ? 0.75 : 1),
-			alpha:     1,
-			cargo:     enemy[0] ? count-startArray.length < powerupsArray.length ? powerups.length-1 : 0 : 0
-		});
+
+	for(j = 0; j < 4; j++) {
+		for(i = 0; i < 3; i++) {
+			if (j==1 || (!j&&(!i||i==2)) || (j==2&&(i==1)))
+				enemies.push({
+					a:         0,             // enemy exploding counter
+					type:      j==2?8:6,             // type
+					x:         400 + i * 120,
+					y:         -300 + j * 80,
+					z:         0,             // for mines - the number of polygons
+					health:    i==1&&j==1?5000:1000,
+					maxHealth: i==1&&j==1?5000:1000,
+					size:      20,
+					collision: 20,
+					speed:     2,
+					animation: 0,
+					timeout:   200,
+					color:     2,
+					alpha:     j!=2?0.75:1,
+					cargo:     j
+				});
+		}
 	}
 }
 
@@ -1142,8 +1321,8 @@ function drawEffects() {
 			effect.x/size-effect.size/size*2,
 			effect.y/size-effect.size/size*2,
 			effect.size*effect.frame/size,
-			effectColors1[effect.type],
-			effectColors2[effect.type],
+			darkColors[effect.type],
+			lightColors[effect.type],
 			1.5 - effect.frame / effect.total
 		);
 
@@ -1198,55 +1377,47 @@ function draw() {
 			missileCurrentCount ++;
 			if(missileCurrentCount >= missileInterval) missileCurrentCount = 0;
 		}
-		if((spacePressed || constantShoot) && !complete && health > 0 && !missileCurrentCount && state == 3) {
+		if((spacePressed || constantShoot) && !complete && health > 0 && !missileCurrentCount) {// && state == 4
 			missileCurrentCount = 1;
+
 			if(!weaponType) {
-				missiles.push(getCannon(0, -38, weaponType));
+				missiles.push(getShot(PlayerCannon, 0, -38));
 			}
 			else
 			if(weaponType == 1) {
 				if(!pwr || pwr % 2 == 0) {
-					missiles.push(getCannon(0, -38, weaponType));
+					missiles.push(getShot(PlayerCannon, 0, -38));
 					for(pwrstep = 2; pwrstep <= 1+pwr/2; pwrstep++) {
 						let offsetY = (pwrstep-1)*(pwrstep-1) * 2;
-						missiles.push(getCannon(-16*pwrstep+16, -40 + offsetY, weaponType));
-						missiles.push(getCannon(16*pwrstep-16, -40 + offsetY, weaponType));
+						missiles.push(getShot(PlayerCannon, -16*pwrstep+16, -40 + offsetY));
+						missiles.push(getShot(PlayerCannon, 16*pwrstep-16, -40 + offsetY));
 					}
 				} else if(pwr == 1 || pwr % 2 != 0) {
 					for(pwrstep = 1; pwrstep <= 1+pwr/2; pwrstep++) {
 						let offsetY = pwrstep*pwrstep * 2;
-						missiles.push(getCannon(-16*pwrstep+8, -40 + offsetY, weaponType));
-						missiles.push(getCannon(16*pwrstep-8, -40 + offsetY, weaponType));
+						missiles.push(getShot(PlayerCannon, -16*pwrstep+8, -40 + offsetY));
+						missiles.push(getShot(PlayerCannon, 16*pwrstep-8, -40 + offsetY));
 					}
 				}
 			}
 			else
 			if(weaponType == 2 || weaponType == 6) {
-				missiles.push(new PlayerLaser(
-										shipX + random()*pwr - pwr/2,
-										shipY-shipRadius,
-										0,
-										missileSpeed,
-										missileSize,
-										pwr,
-										weaponType
-									)
-				);
+				missiles.push(getShot(PlayerLaser, random()*pwr - pwr/2, -shipRadius));
 			}
 			else
 			if(weaponType == 3 || weaponType == 11){
 				missileCurrentCount += (weaponType == 11 ? pwr : pwr*2);
-				missiles.push(new PlayerBlob(shipX, shipY-22, weaponType == 11 ? (leftPressed ? 5 : rightPressed ? -5 : 0) + pwr - random()*pwr*2 : 0, missileSpeed-1 + (weaponType==3?0.5:0.2)*pwr, missileSize, pwr, 3));
+				missiles.push(getShot(PlayerBlob, 0, -22, weaponType == 11 ? (leftPressed ? 5 : rightPressed ? -5 : 0) + pwr - random()*pwr*2 : 0, missileSpeed-1 + (weaponType==3?0.5:0.2)*pwr));
 			}
 
 			else
 			if(weaponType == 4 || weaponType == 10){
 				if(weaponType == 4) missileCurrentCount += pwr*3;
-				missiles.push(new PlayerMissile(shipX, shipY-30, 0, missileSpeed, missileSize, pwr));
+				missiles.push(getShot(PlayerMissile, 0, -30));
 				if(weaponType == 10) {
 					for(pwrstep = 0; pwrstep < parseInt(pwr/2); pwrstep++) {
 						let r = random();
-						missiles.push(new PlayerMissile(shipX + (r<0.5?-30:30), shipY-20, (r<0.5?-pwrstep:pwrstep)*20*r, missileSpeed/2+missileSpeed*parseInt(r*10)/20, missileSize, pwr));
+						missiles.push(getShot(PlayerMissile, r<0.5?-30:30, -20, (r<0.5?-pwrstep:pwrstep)*20*r, missileSpeed/2+missileSpeed*parseInt(r*10)/20));
 					}
 				}
 			}
@@ -1254,51 +1425,42 @@ function draw() {
 			if(weaponType == 5 || weaponType == 9){
 				if(!pwr || pwr % 2 == 0 || weaponType == 9) {
 					if(weaponType == 9 && pwr > 3){
-						missiles.push(getBlob(-30,0,-1));
-						missiles.push(getBlob(30,0,1));
+						missiles.push(getShot(PlayerBlob, -30, 0, -1));
+						missiles.push(getShot(PlayerBlob, 30, 0, 1));
 					} else {
-						missiles.push(getBlob(0,0,0));
+						missiles.push(getShot(PlayerBlob));
 					}
 					for(pwrstep = 2; pwrstep <= 1+pwr/2; pwrstep++) {
-						missiles.push(getBlob(weaponType==9 ? -40 : 0, 0, -15*pwrstep+16));
-						missiles.push(getBlob(weaponType==9 ? 40 : 0,0, 15*pwrstep-16));
+						missiles.push(getShot(PlayerBlob, weaponType==9 ? -40 : 0, 0, -15*pwrstep+16));
+						missiles.push(getShot(PlayerBlob, weaponType==9 ? 40 : 0, 0, 15*pwrstep-16));
 						if(weaponType == 9) break;
 					}
 				} else if(pwr == 1 || pwr % 2 != 0) {
 					for(pwrstep = 1; pwrstep <= 1+pwr/2; pwrstep++) {
-						missiles.push(getBlob(0,0, -15*pwrstep+7.5));
-						missiles.push(getBlob(0,0, 15*pwrstep-7.5));
+						missiles.push(getShot(PlayerBlob, 0, 0, -15*pwrstep+7.5));
+						missiles.push(getShot(PlayerBlob, 0, 0, 15*pwrstep-7.5));
 					}
 				}
 				if(weaponType == 9 || pwr > 4) {
-					missiles.push(getBlob(0,0, -90));
-					missiles.push(getBlob(0,0, 90));
+					missiles.push(getShot(PlayerBlob, 0, 0, -90));
+					missiles.push(getShot(PlayerBlob, 0, 0, 90));
 				}
 			}
 			else
 			if(weaponType == 7){
 				if (pwr==1 || pwr >= 3) {
-					missiles.push(new PlayerMissile(shipX-30+(pwr==3||pwr==4?8:0), shipY, 0, missileSpeed, missileSize, pwr));
-					missiles.push(new PlayerMissile(shipX+30-(pwr==3||pwr==4?8:0), shipY, 0, missileSpeed, missileSize, pwr));
+					missiles.push(getShot(PlayerMissile, -30+(pwr==3||pwr==4?8:0)));
+					missiles.push(getShot(PlayerMissile, 30-(pwr==3||pwr==4?8:0)));
 				}
 				if (pwr==2 || pwr>=3 ) {
-					missiles.push(new PlayerMissile(shipX-60, shipY+30, 0, missileSpeed, missileSize, pwr));
-					missiles.push(new PlayerMissile(shipX+60, shipY+30, 0, missileSpeed, missileSize, pwr));
+					missiles.push(getShot(PlayerMissile, -60, 30));
+					missiles.push(getShot(PlayerMissile, 60, 30));
 				}
-				if(pwr==2 || pwr>4) missiles.push(new PlayerMissile(shipX, shipY-30, 0, missileSpeed, missileSize, pwr));
+				if(pwr==2 || pwr>4) missiles.push(getShot(PlayerMissile, 0, -30));
 			}
 			else
 			if(weaponType == 8){
-				missiles.push(new PlayerLaser(
-										shipX + random()*pwr - pwr/2,
-										shipY-shipRadius,
-										leftPressed ? -30 : rightPressed ? 30 : 0,
-										missileSpeed,
-										missileSize,
-										pwr,
-										weaponType
-									)
-				);
+				missiles.push(getShot(PlayerLaser, random()*pwr - pwr/2, -shipRadius, leftPressed ? -30 : rightPressed ? 30 : 0));
 			}
 		}
 
@@ -1329,12 +1491,8 @@ function draw() {
 	}
 }
 
-function getCannon(x, y, weaponType, r){
-	return new PlayerCannon(shipX+x, shipY+y, r || 0, missileSpeed, missileSize, pwr, weaponType);
-}
-
-function getBlob(x, y, r){
-	return new PlayerBlob(shipX+x, shipY+y, r, missileSpeed, missileSize, pwr, 5);
+function getShot(c, x = 0, y = 0, r = 0, s = 0){
+	return new c(shipX+x, shipY+y, r, s || missileSpeed, missileSize, pwr, weaponType, lightColors[weaponType], darkColors[weaponType]);
 }
 
 function checkForDeath(enemy, missile) {
@@ -1355,6 +1513,15 @@ function checkForDeath(enemy, missile) {
 	}
 
 	checkGameOver();
+}
+
+function reloadOnGameOver(){
+	if(gameOver) {
+		if(gameOver == 2) {
+			//writeHash(0);
+			location.reload();
+		}
+	}
 }
 
 function checkGameOver(){
