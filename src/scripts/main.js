@@ -530,10 +530,10 @@ function showMenu(skip){
 			for(let j = 0; j < 2; j++) {
 				for(let i = 0; i < 6; i++) {
 					let image = `<img class='brokenimage smalltext' src='./' width=60 height=60>`;
-					html += `<div class=image style='left:${160*i+60}px;margin-top:${j?220:0}px'>`;
+					html += `<div class=image style=left:${160*i+60}px;margin-top:${j?220:0}px>`;
 					if (!powerArr[j*6 + i]) {
 						if(!cut) cut = j*6 + i;
-						html += image.replace("./'", `' style='margin-top:36px;margin-left:36px;' alt=' &nbsp; &nbsp; &nbsp;${shipNames[j*6+i]}\n&nbsp;.png'`) + image + image;
+						html += image.replace("./'", `' style=margin-top:36px;margin-left:36px; alt=' &nbsp; &nbsp; &nbsp;${shipNames[j*6+i]}\n&nbsp;.png'`) + image + image;
 					}
 					html += "</div>";
 				}
@@ -1116,25 +1116,27 @@ function random() {
 
 
 function moveMissiles(){
-	len = missiles.length;
-	let missilesToRemove = [];
-	for(let i = 0; i < len; i++){
+	len = missiles.length - 1;
+	for(let i = len; i >= 0; i--){
 		missile = missiles[i];
 		if(missile.pulse != -1) {
 			if (missile.pulse > 0) {
 				missile.pulse --;
-			} else
-				missilesToRemove.push(missile);
+			} else {
+				missiles.splice(i,1);
+				len = missiles.length-1;
+			}
 		} else {
 			missile.moveByAngle();
-			if (missile.y < 0 || missile.y > gameCanvas.height || missile.x < 0 || missile.x > gameCanvas.width)
-				missilesToRemove.push(missile);
-
-			if (!missile.type) {
+			if (missile.y < 0 || missile.y > gameCanvas.height || missile.x < 0 || missile.x > gameCanvas.width) {
+				missiles.splice(i,1);
+				len = missiles.length-1;
+			}
+			else if (!missile.type) {
 				if(missile.angle>0.1||missile.angle<-0.1)
 					missile.angle*=0.5;
-			} else
-			if (missile.type==4 || missile.type==1) {
+			}
+			else if (missile.type==4 || missile.type==1) {
 				missile.speed*=1.01;
 				missile.angle*=0.9;
 			}
@@ -1142,9 +1144,6 @@ function moveMissiles(){
 			if(missile.type == 1 && missile.pulse > -1)
 				missile.angle=360*random();
 		}
-	}
-	for(let i = 0; i < missilesToRemove.length; i++){
-		missiles.splice(missiles.indexOf(missilesToRemove[i]), 1);
 	}
 }
 function drawMissiles(){
@@ -1164,7 +1163,16 @@ function drawMissile(i){
 function movePowerups(){
 	for(let i = 0; i<powerups.length; i++){
 		powerup = powerups[i];
-		if(powerup.a){
+		if(powerup.type){
+			if(powerup.a){
+				powerup.y += powerup.speed*globalSpeed;
+				if(powerup.y > gameCanvas.height+powerup.size){
+					powerup.type = 0;
+					powerup.a = 0;
+				}
+			}
+		}
+		/*if(powerup.a){
 			if(powerup.type<1)
 				powerup.a++;
 			powerup.y += powerup.speed*globalSpeed;
@@ -1172,13 +1180,13 @@ function movePowerups(){
 				powerup.type=0;
 				powerup.a=0;
 			}
-		}
+		}*/
 	}
 }
 function drawPowerups(){
 	for(let i = 0; i<powerups.length; i++){
 		powerup = powerups[i];
-		if(powerup.a){
+		/*if(powerup.a){
 			if(powerup.type){
 				gameContext.beginPath();
 				gameContext.fillStyle = (powerup.type==1) ? "#cb4" : (powerup.type==2) ? "#292" : (powerup.type==5) ? "#09d" : "#5a8";
@@ -1194,7 +1202,17 @@ function drawPowerups(){
 
 			gameContext.font = "bold 28px Arial";
 			gameContext.fillStyle = powerup.type ? "#000" : powerup.a> 125 ? powerup.a> 140 ? "#888" : "#aaa" : "#ccc";
- 			gameContext.fillText([powerup.txt,".Att",".Hp+",".Sh+",".Sp+",".Sz+",".Ms"][powerup.type], powerup.x-powerup.size, powerup.y-powerup.size*0.25);
+			gameContext.fillText([powerup.txt,".Att",".Hp+",".Sh+",".Sp+",".Sz+",".Ms"][powerup.type], powerup.x-powerup.size, powerup.y-powerup.size*0.25);
+		}*/
+		if(powerup.type && powerup.a){
+			gameContext.beginPath();
+			gameContext.arc(powerup.x-powerup.size/(powerup.type==2||powerup.type==5?4:3), powerup.y-powerup.size/2, powerup.size/(powerup.type==2||powerup.type==5?1.75:1.5), 0, Math.PI*2);
+			gameContext.fillStyle = (powerup.type==1) ? "#CC2939" : (powerup.type==2) ? "#199919" : (powerup.type==5) ? "#0095DD" : "#59aa89";
+			gameContext.fill();
+			gameContext.closePath();
+			gameContext.font = "bold 28px Arial";
+			gameContext.fillStyle = "#ffffff";
+ 			gameContext.fillText(["A","+","+","S","M","R"][powerup.type-1], powerup.x-powerup.size*[0.54, 0.51, 0.52, 0.62, 0.51][powerup.type-1], powerup.y-powerup.size * 0.25);
 		}
 	}
 }
@@ -1270,17 +1288,19 @@ function drawEnemies() {
 				drawUnit(gameContext, enemy.type, enemy.type, enemy.color, enemy.animation, enemy.x, enemy.y - enemy.size/2, true, size);
 				gameContext.globalAlpha = 1;
 
-				// draw health bar
-				gameContext.beginPath();
-				gameContext.fillStyle = "#900";
-				gameContext.rect(enemy.x-2, enemy.y + 5, 4, ((enemy.size/enemy.maxHealth)*enemy.maxHealth)/2);
-				gameContext.fill();
-				gameContext.closePath();
-				gameContext.beginPath();
-				gameContext.fillStyle = "#fff";
-				gameContext.rect(enemy.x-2, enemy.y + 5 + ((enemy.size/enemy.maxHealth)*(enemy.maxHealth-enemy.health))/2, 4, ((enemy.size/enemy.maxHealth)*enemy.health)*0.9/2);
-				gameContext.fill();
-				gameContext.closePath();
+				if(enemy.type == 3) {
+					// draw health bar
+					gameContext.beginPath();
+					gameContext.rect(enemy.x-2, enemy.y + 5, 4, ((enemy.size/enemy.maxHealth)*enemy.maxHealth)/2);
+					gameContext.fillStyle = "#900";
+					gameContext.fill();
+					gameContext.closePath();
+					gameContext.beginPath();
+					gameContext.rect(enemy.x-2, enemy.y + 5 + ((enemy.size/enemy.maxHealth)*(enemy.maxHealth-enemy.health))/2, 4, ((enemy.size/enemy.maxHealth)*enemy.health)*0.9/2);
+					gameContext.fillStyle = "#fff";
+					gameContext.fill();
+					gameContext.closePath();
+				}
 			}
 
 			// enemy is exploding
@@ -1321,8 +1341,8 @@ function drawEffects() {
 			effect.x/size-effect.size/size*2,
 			effect.y/size-effect.size/size*2,
 			effect.size*effect.frame/size,
-			darkColors[effect.type],
 			lightColors[effect.type],
+			darkColors[effect.type],
 			1.5 - effect.frame / effect.total
 		);
 
@@ -1333,7 +1353,7 @@ function drawEffects() {
 	}
 }
 
-function drawExplosion(x, y, s, c1 = 'yellow', c2 = 'red', a = 1) {
+function drawExplosion(x, y, s, c1 = '#ff0', c2 = 'red', a = 1) {
 	effectsContext.beginPath();
 	effectsContext.globalAlpha = a;
 	effectsContext.arc(x, y, s, 0, 2 * Math.PI, false);
@@ -1350,134 +1370,143 @@ function draw() {
 	bgrContext.clearRect(0, 0, bgrCanvas.width, bgrCanvas.height);
 	moveBgr();
 	if(playing) {
-		step++;
-		if(changeTime) changeTime --;
-		if(invulnerable) invulnerable--;
+		if(slowing) slowing --;
+		else {
+			step++;
+			if(changeTime) changeTime --;
 
-		gameContext.clearRect(0, 0, gameCanvas.width, gameCanvas.height);
-		effectsContext.clearRect(0, 0, bgrCanvas.width/5, bgrCanvas.height/5);
-		drawEffects();
-
-		moveMissiles();
-		drawMissiles();
-
-		moveEnemies();
-		drawEnemies();
-
-		movePowerups();
-		drawPowerups();
-
-		drawShip();
-
-		collisionDetection();
-
-		drawFPS();
-		let pwrstep;
-		if(missileCurrentCount) {
-			missileCurrentCount ++;
-			if(missileCurrentCount >= missileInterval) missileCurrentCount = 0;
-		}
-		if((spacePressed || constantShoot) && !complete && health > 0 && !missileCurrentCount) {// && state == 4
-			missileCurrentCount = 1;
-
-			if(!weaponType) {
-				missiles.push(getShot(PlayerCannon, 0, -38));
+			if(invulnerable) invulnerable--;
+			else if(step%(30-shieldGain)==0 && shield < shieldMax) {
+				shield++;
+				updateUI();
 			}
-			else
-			if(weaponType == 1) {
-				if(!pwr || pwr % 2 == 0) {
+
+			gameContext.clearRect(0, 0, gameCanvas.width, gameCanvas.height);
+			effectsContext.clearRect(0, 0, bgrCanvas.width/5, bgrCanvas.height/5);
+			drawEffects();
+
+			moveMissiles();
+			drawMissiles();
+			//drawEnemyMissiles();
+
+			moveEnemies();
+			drawEnemies();
+
+			movePowerups();
+			drawPowerups();
+
+			drawShip();
+
+			collisionDetection();
+
+			let pwrstep;
+			if(missileCurrentCount) {
+				missileCurrentCount ++;
+				if(missileCurrentCount >= missileInterval) missileCurrentCount = 0;
+			}
+			if((spacePressed || constantShoot) && !complete && health > 0 && !missileCurrentCount) {
+				missileCurrentCount = 1;
+
+				if(!weaponType) {
 					missiles.push(getShot(PlayerCannon, 0, -38));
-					for(pwrstep = 2; pwrstep <= 1+pwr/2; pwrstep++) {
-						let offsetY = (pwrstep-1)*(pwrstep-1) * 2;
-						missiles.push(getShot(PlayerCannon, -16*pwrstep+16, -40 + offsetY));
-						missiles.push(getShot(PlayerCannon, 16*pwrstep-16, -40 + offsetY));
-					}
-				} else if(pwr == 1 || pwr % 2 != 0) {
-					for(pwrstep = 1; pwrstep <= 1+pwr/2; pwrstep++) {
-						let offsetY = pwrstep*pwrstep * 2;
-						missiles.push(getShot(PlayerCannon, -16*pwrstep+8, -40 + offsetY));
-						missiles.push(getShot(PlayerCannon, 16*pwrstep-8, -40 + offsetY));
+				}
+				else
+				if(weaponType == 1) {
+					if(!pwr || pwr % 2 == 0) {
+						missiles.push(getShot(PlayerCannon, 0, -38));
+						for(pwrstep = 2; pwrstep <= 1+pwr/2; pwrstep++) {
+							let offsetY = (pwrstep-1)*(pwrstep-1) * 2;
+							missiles.push(getShot(PlayerCannon, -16*pwrstep+16, -40 + offsetY));
+							missiles.push(getShot(PlayerCannon, 16*pwrstep-16, -40 + offsetY));
+						}
+					} else if(pwr == 1 || pwr % 2 != 0) {
+						for(pwrstep = 1; pwrstep <= 1+pwr/2; pwrstep++) {
+							let offsetY = pwrstep*pwrstep * 2;
+							missiles.push(getShot(PlayerCannon, -16*pwrstep+8, -40 + offsetY));
+							missiles.push(getShot(PlayerCannon, 16*pwrstep-8, -40 + offsetY));
+						}
 					}
 				}
-			}
-			else
-			if(weaponType == 2 || weaponType == 6) {
-				missiles.push(getShot(PlayerLaser, random()*pwr - pwr/2, -shipRadius));
-			}
-			else
-			if(weaponType == 3 || weaponType == 11){
-				missileCurrentCount += (weaponType == 11 ? pwr : pwr*2);
-				missiles.push(getShot(PlayerBlob, 0, -22, weaponType == 11 ? (leftPressed ? 5 : rightPressed ? -5 : 0) + pwr - random()*pwr*2 : 0, missileSpeed-1 + (weaponType==3?0.5:0.2)*pwr));
+				else
+				if(weaponType == 2 || weaponType == 6) {
+					missiles.push(getShot(PlayerLaser, random()*pwr - pwr/2, -shipRadius));
+				}
+				else
+				if(weaponType == 3 || weaponType == 11){
+					missileCurrentCount += (weaponType == 11 ? pwr : pwr*2);
+					missiles.push(getShot(PlayerBlob, 0, -22, weaponType == 11 ? (leftPressed ? 5 : rightPressed ? -5 : 0) + pwr - random()*pwr*2 : 0, missileSpeed-1 + (weaponType==3?0.5:0.2)*pwr));
+				}
+
+				else
+				if(weaponType == 4 || weaponType == 10){
+					if(weaponType == 4) missileCurrentCount += pwr*3;
+					missiles.push(getShot(PlayerMissile, 0, -30));
+					if(weaponType == 10) {
+						for(pwrstep = 0; pwrstep < parseInt(pwr/2); pwrstep++) {
+							let r = random();
+							missiles.push(getShot(PlayerMissile, r<0.5?-30:30, -20, (r<0.5?-pwrstep:pwrstep)*20*r, missileSpeed/2+missileSpeed*parseInt(r*10)/20));
+						}
+					}
+				}
+				else
+				if(weaponType == 5 || weaponType == 9){
+					if(!pwr || pwr % 2 == 0 || weaponType == 9) {
+						if(weaponType == 9 && pwr > 3){
+							missiles.push(getShot(PlayerBlob, -30, 0, -1));
+							missiles.push(getShot(PlayerBlob, 30, 0, 1));
+						} else {
+							missiles.push(getShot(PlayerBlob));
+						}
+						for(pwrstep = 2; pwrstep <= 1+pwr/2; pwrstep++) {
+							missiles.push(getShot(PlayerBlob, weaponType==9 ? -40 : 0, 0, -15*pwrstep+16));
+							missiles.push(getShot(PlayerBlob, weaponType==9 ? 40 : 0, 0, 15*pwrstep-16));
+							if(weaponType == 9) break;
+						}
+					} else if(pwr == 1 || pwr % 2 != 0) {
+						for(pwrstep = 1; pwrstep <= 1+pwr/2; pwrstep++) {
+							missiles.push(getShot(PlayerBlob, 0, 0, -15*pwrstep+7.5));
+							missiles.push(getShot(PlayerBlob, 0, 0, 15*pwrstep-7.5));
+						}
+					}
+					if(weaponType == 9 || pwr > 4) {
+						missiles.push(getShot(PlayerBlob, 0, 0, -90));
+						missiles.push(getShot(PlayerBlob, 0, 0, 90));
+					}
+				}
+				else
+				if(weaponType == 7){
+					if (pwr==1 || pwr >= 3) {
+						missiles.push(getShot(PlayerMissile, -30+(pwr==3||pwr==4?8:0)));
+						missiles.push(getShot(PlayerMissile, 30-(pwr==3||pwr==4?8:0)));
+					}
+					if (pwr==2 || pwr>=3 ) {
+						missiles.push(getShot(PlayerMissile, -60, 30));
+						missiles.push(getShot(PlayerMissile, 60, 30));
+					}
+					if(pwr==2 || pwr>4) missiles.push(getShot(PlayerMissile, 0, -30));
+				}
+				else
+				if(weaponType == 8){
+					missiles.push(getShot(PlayerLaser, random()*pwr - pwr/2, -shipRadius, leftPressed ? -30 : rightPressed ? 30 : 0));
+				}
 			}
 
-			else
-			if(weaponType == 4 || weaponType == 10){
-				if(weaponType == 4) missileCurrentCount += pwr*3;
-				missiles.push(getShot(PlayerMissile, 0, -30));
-				if(weaponType == 10) {
-					for(pwrstep = 0; pwrstep < parseInt(pwr/2); pwrstep++) {
-						let r = random();
-						missiles.push(getShot(PlayerMissile, r<0.5?-30:30, -20, (r<0.5?-pwrstep:pwrstep)*20*r, missileSpeed/2+missileSpeed*parseInt(r*10)/20));
-					}
-				}
+			if(rightPressed && shipX < gameCanvas.width-shipRadius) {
+				shipX += shipSpeed;
 			}
-			else
-			if(weaponType == 5 || weaponType == 9){
-				if(!pwr || pwr % 2 == 0 || weaponType == 9) {
-					if(weaponType == 9 && pwr > 3){
-						missiles.push(getShot(PlayerBlob, -30, 0, -1));
-						missiles.push(getShot(PlayerBlob, 30, 0, 1));
-					} else {
-						missiles.push(getShot(PlayerBlob));
-					}
-					for(pwrstep = 2; pwrstep <= 1+pwr/2; pwrstep++) {
-						missiles.push(getShot(PlayerBlob, weaponType==9 ? -40 : 0, 0, -15*pwrstep+16));
-						missiles.push(getShot(PlayerBlob, weaponType==9 ? 40 : 0, 0, 15*pwrstep-16));
-						if(weaponType == 9) break;
-					}
-				} else if(pwr == 1 || pwr % 2 != 0) {
-					for(pwrstep = 1; pwrstep <= 1+pwr/2; pwrstep++) {
-						missiles.push(getShot(PlayerBlob, 0, 0, -15*pwrstep+7.5));
-						missiles.push(getShot(PlayerBlob, 0, 0, 15*pwrstep-7.5));
-					}
-				}
-				if(weaponType == 9 || pwr > 4) {
-					missiles.push(getShot(PlayerBlob, 0, 0, -90));
-					missiles.push(getShot(PlayerBlob, 0, 0, 90));
-				}
+			if(leftPressed && shipX > shipRadius) {
+				shipX -= shipSpeed;
 			}
-			else
-			if(weaponType == 7){
-				if (pwr==1 || pwr >= 3) {
-					missiles.push(getShot(PlayerMissile, -30+(pwr==3||pwr==4?8:0)));
-					missiles.push(getShot(PlayerMissile, 30-(pwr==3||pwr==4?8:0)));
-				}
-				if (pwr==2 || pwr>=3 ) {
-					missiles.push(getShot(PlayerMissile, -60, 30));
-					missiles.push(getShot(PlayerMissile, 60, 30));
-				}
-				if(pwr==2 || pwr>4) missiles.push(getShot(PlayerMissile, 0, -30));
+			/*if(upPressed && shipY > gameCanvas.height/6) {
+				shipY -= shipSpeed;
 			}
-			else
-			if(weaponType == 8){
-				missiles.push(getShot(PlayerLaser, random()*pwr - pwr/2, -shipRadius, leftPressed ? -30 : rightPressed ? 30 : 0));
-			}
+			if(downPressed && shipY < gameCanvas.height-shipRadius*1.5) {
+				shipY += shipSpeed;
+			}*/
 		}
-
-		if(rightPressed && shipX < gameCanvas.width-shipRadius) {
-			shipX += shipSpeed;
-		}
-		if(leftPressed && shipX > shipRadius) {
-			shipX -= shipSpeed;
-		}
-		/*if(upPressed && shipY > gameCanvas.height/6) {
-			shipY -= shipSpeed;
-		}
-		if(downPressed && shipY < gameCanvas.height-shipRadius*1.5) {
-			shipY += shipSpeed;
-		}*/
 	}
 
+	drawFPS();
 	if(running) requestAnimationFrame(draw);
 	else {// paused
 		effectsContext.globalAlpha = 0.6;
@@ -1594,13 +1623,25 @@ function collisionDetection(i, len2, len) {
 	len = enemies.length;
 	for(let i = 0; i < len; i++) {
 		enemy = enemies[i];
-		if(enemy.y > 800 && enemy.health && !invulnerable){
-			if(circlesColliding(enemy.x, enemy.y, enemy.size, shipX, shipY, shipRadius)) {
-				master = false;
+		if(enemy.type < 5 && enemy.health && !invulnerable){
+			if(circlesColliding(enemy.x, enemy.y, enemy.collision, shipX, shipY, shipRadius)) {
 				enemy.health = 0;
-				enemy.a = 50;
+				enemy.a = 40;
+				killedArr[enemy.type] ++;
+				let damage = [25, 30, 50, 100][enemy.type];
+				if(shield>damage) {
+					shield-=damage;
+					invulnerable = 5;
+					shielded = true;
+				} else {
+					health -= (damage - shield);
+					shield = 0;
+					invulnerable = 50;
+					hurt = true;
+					shielded = true;
+				}
+				updateUI();
 				checkForDeath(enemy);
-				invulnerable = 50;
 			}
 		}
 	}
