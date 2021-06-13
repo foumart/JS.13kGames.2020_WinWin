@@ -101,7 +101,7 @@ let online = (window.location.protocol == "http:" || window.location.protocol ==
 let size = 5;// value in Missile.js as well
 let starSize;
 let starSpeed;
-let level = 0;
+let level = 1;
 let complete = 0;
 let score = 0;
 var gameOver = 0;
@@ -150,7 +150,10 @@ function shuffle(array) {
 	return array;
 }
 
-let shipWeapons =           [
+let darkColors = ['f32', 'c60', 'cfc', 'ccf', 'f94', 'f00', 'f00', '6f6', 'd6a','ff0', '36f', 'f00', 'f93', '420'];
+let lightColors = ['cb6', 'f92', '9f9', '88d', '952', 'ff0', 'ff0', 'ff0', 'f9e', 'f00', '9cf', 'f90', 'f24', '840'];
+
+let shipWeapons = [
 	'Cannon',
 	'Gun',
 	'Laser',
@@ -166,7 +169,7 @@ let shipWeapons =           [
 ];
 
 let shipTitles = [
-	'Raptor', 'Rogue', 'Viper', 'Valkyre', 'Behemoth', 'Hunter', 'Explorer', 'Scout', 'Wraith', 'Spectrum', 'Phoenix', 'Coil'
+	'Raptor', 'Rogue', 'Viper', 'Valkyre', 'Behemoth', 'Hunter', 'Explorer', 'Scout', 'Wraith', 'Specter', 'Phoenix', 'Coil'
 ];
 
 let shipNames =              ['A', 'G', 'L', 'Y', 'V', 'T', 'X', 'S', 'W', 'R', 'F', 'C'];
@@ -177,24 +180,25 @@ function resetStats(arrays) {//    1    2    3    4    5    6    7    8    9    
 		colorArr =           [1,   1,   3,   1,   4,   2,   4,   3,   2,   4,   1,   1  ],  // 4
 
 		powerArr =           [1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1  ],
-		shipradiusArr =      [70,  75,  60,  70,  80,  70,  75,  60,  80,  78,  80,  78 ],
-		shipspeedArr =       [6,   5,   5.5, 5,   4,   4.5, 6,   6.5, 4,   5,   4.5, 7  ],
-		missilespeedArr =    [20,  15,  40,  12,  3,   20,  25,  30,  8,   16,  6,   18 ],
-		missilesizeArr =     [5,   3,   2.5, 8,   12,  6,   4,   5,   6,   7,   10,  7  ],
-		missileintervalArr = [10,  18,  3,   30,  40,  20,  15,  25,  8,   25,  35,  16 ],
+		shipradiusArr =      [70,  75,  60,  70,  80,  70,  72,  60,  75,  80,  78,  78 ],
+		shipspeedArr =       [6,   5,   5.5, 5,   4,   4.5, 6,   6.5, 4.5, 3.5, 5,   7  ],
+		missilespeedArr =    [20,  15,  40,  12,  3,   20,  25,  22,  9,   16,  6,   18 ],
+		missilesizeArr =     [5,   3,   2.5, 8,   12,  6,   4,   5,   5,   7,   10,  7  ],
+		missileintervalArr = [10,  18,  3,   30,  40,  20,  15,  25,  12,  25,  35,  16 ],
 		missiledamageArr =   [1,   1.5, 0.5, 3,   5,   2,   1.5, 2.5, 2.75,2.25,3,   2  ],
-		healthmaxArr =       [75,  100, 60,  80,  100, 80,  80,  70,  90,  75,  90,  105],
-		healthmaxiniArr =    [75,  100, 60,  80,  100, 80,  80,  60,  90,  75,  90,  105],
-		shieldmaxArr =       [10,  15,  10,  25,  20,  10,  30,  5,   20,  15,  20,  15 ],
-		shieldmaxiniArr =    [10,  15,  10,  25,  20,  10,  30,  5,   20,  15,  20,  15 ],
-		poweredArr =         [0,   0,   0,   0,   0,   0,   0]
+		healthmaxArr =       [75,  95,  60,  80,  100, 85,  80,  70,  90,  75,  90,  105],
+		healthmaxiniArr =    [75,  95,  60,  80,  100, 85,  80,  70,  90,  75,  90,  105],
+		shieldmaxArr =       [10,  15,  10,  25,  15,  20,  30,  5,   0,   15,  20,  15 ],
+		shieldmaxiniArr =    [10,  15,  10,  25,  20,  20,  30,  5,   0,   15,  20,  15 ],
+		poweredArr =         [0,   0,   0,   0,   0,   0,   0],
+		killedArr =          []
 	];
 	return arrays;
 }
 arrays = resetStats();
 
 function updateStats(){
-	if(monet && !powerArr[11]) powerArr[11] = 1;
+	if (monet && !powerArr[11]) powerArr[11] = 1;
 	pwr =             powerArr[weaponType];
 	shipRadius =      shipradiusArr[weaponType];
 	shipSpeed =       shipspeedArr[weaponType];
@@ -209,9 +213,6 @@ function updateStats(){
 
 }
 updateStats();
-
-let darkColors = ["f32", "c60", "cfc", "ccf", "f94", 'red', 'red', 'green', '#4499cc','yellow', 'red'];
-let lightColors = ["b96", "f92", "9f9", "88d", "952", 'yellow', 'yellow', 'cyan', '#66ccff', 'red', 'yellow'];
 
 let len;
 
@@ -265,19 +266,23 @@ let imagesMirrored = [];
 
 let stages = [
 	[200, 400],
-	[]
+	[100, 100]
 ];
 
 function init(){
 	buffer();
 	generateMenu();
 	generate();
-	window.addEventListener("resize", resize, false);
 	resize();
 	showMenu();
 	draw();
 
+	window.addEventListener("resize", resize);
 	overlay.addEventListener(event, pickMenu, {passive: true});
+	leftBtn.addEventListener(event, leftTap, {passive: true});
+	rightBtn.addEventListener(event, rightTap, {passive: true});
+	centralBtn.addEventListener(event, centerTap, {passive: true});
+	window.addEventListener(eventEnd, checkTapEnd);
 
 	document.addEventListener("fullscreenchange", fullscreenCheck);
 	if (standalone && !fff && !fullscreenCanceled) {
@@ -285,8 +290,8 @@ function init(){
 		toggleFullscreen();
 	}
 
-	document.addEventListener("keydown", keyDownHandler, false);
-	document.addEventListener("keyup", keyUpHandler, false);
+	document.addEventListener("keydown", keyDownHandler);
+	document.addEventListener("keyup", keyUpHandler);
 
 	requestAnimationFrame(checkMonetization);
 
@@ -453,6 +458,17 @@ function getSpriteCanvas(w, h, add){
 	return [canvas, context];
 }
 
+/**
+ * context
+ * type
+ * type
+ * color
+ * animation
+ * x
+ * y
+ * reversed
+ * size
+ */			
 function drawUnit(ctx, i, id, clr, spd, x, y, z, s) {
 	let c = i>8 ? -1 : 1;
 	let S = s || 1;
@@ -460,7 +476,7 @@ function drawUnit(ctx, i, id, clr, spd, x, y, z, s) {
 	let X2 = s ? x : x-6;
 	let Y1 = y + (!spd ? s==1?0:i<7?S+1:id==7?-2:2 : ((step/spd)|0)%4==0?S:((step/spd)|0)%2==0?-S:0);
 	let Y2 = y + (i>7&&id<8 ? s==1?2:S+2 : i<8&&id>6 ? s==1?2:S*2+2 : s==1?0:i>5?-2:2) + (!spd ? 0 : ((step/spd)|0)%4==0?-S:((step/spd)|0)%2==0?S:0)-1;
-	if (!spd && clr) {
+	if (!spd && clr && clr != 2) {
 		Y1 += leftPressed?2:rightPressed?-2:0;
 		Y2 += leftPressed?-2:rightPressed?2:0;
 	}
@@ -474,7 +490,7 @@ function drawUnit(ctx, i, id, clr, spd, x, y, z, s) {
 function drawShip() {
 	gameContext.globalAlpha = 0.25;
 	gameContext.beginPath();
-	gameContext.fillStyle = invulnerable && step%2==0 ? 'red': 'blue';
+	gameContext.fillStyle = invulnerable && step%2==0 ? '#f00': '#00f';
 	gameContext.arc(shipX, shipY, shipRadius, 0, 2 * Math.PI, false);
 	gameContext.fill();
 	gameContext.lineWidth = 5;
@@ -485,8 +501,9 @@ function drawShip() {
 	drawUnit(gameContext, weaponType, indexArr[weaponType], colorArr[weaponType], 0, shipX, shipY - shipRadius + (weaponType>8 ? 20 : 0), indexArr[weaponType]>6, size);
 	gameContext.globalAlpha = 1;
 	// draw explosions if player ship has been destroyed
-	if (health <= 0 && invulnerable%2 == 0)
-		addEffect({x:shipX, y:shipY, size:shipRadius}, weaponType, 1, 9+random(5), 5);
+	if (health <= 0 && invulnerable%2 == 0) {
+		addEffect({x:shipX, y:shipY, size:shipRadius}, 12, 9+random(5), 4);
+	}
 }
 
 function drawShipMenu(container, i = 1, id = 1, clr = 3) {
@@ -513,7 +530,7 @@ function transitionMenu(top, bottom){
 function showMenu(skip){
 	state = 0;
 	transitionMenu(skip?90:190, skip?-235:-335);
-	if(!skip) setTimeout(
+	if (!skip) setTimeout(
 		() => {
 			titletop.style.zIndex = 1;
 			titlebottom.style.zIndex = 1;
@@ -523,6 +540,38 @@ function showMenu(skip){
 	setTimeout(
 		() => {
 			transitionMenu(550, -510);
+/*
+let htmlTemp = '';
+for(let k = 0; k < 20; k++) {
+	for(let j = 0; j < 4; j++) {
+		for(let i = 0; i < 6; i++) {
+			htmlTemp += `<div class=image style=left:${160*i+60}px;margin-top:${k*900+200*j}px>`;
+			htmlTemp += `<span style=margin-top:125px;margin-left:10px;></span>`;
+			htmlTemp += "</div>";
+		}
+	}
+}
+central.innerHTML = htmlTemp;
+central.style.height = "800px";
+central.style.overflow = "auto";
+
+let tempDivs = central.getElementsByTagName('div');
+console.log(tempDivs);
+for(let k = 0; k < 20; k++) {
+	for(let j = 0; j < 4; j++) {
+		for(let i = 0; i < 6; i++) {
+			//drawUnit(gameContext, enemy.type, enemy.type, enemy.color, enemy.animation, enemy.x, enemy.y - enemy.size/2, true, size);
+			let newImage;
+			newImage = getSpriteCanvas(24, 23);
+			newImage[0].className = "image pixelated";
+			tempDivs[k*24+j*6+i].appendChild(newImage[0]);
+			drawUnit(newImage[1], k, j*6+i, 2, 0, 12, 0, true, 1);//
+
+			tempDivs[k*24+j*6+i].children[0].innerHTML = k + "/" + (j*6+i);
+		}
+	}
+}
+return;*/
 
 			let brk = '<br>';
 			let html = "Pick a ship: &nbsp;<span id=shipname>" + shipTitles[weaponType] + "</span>" + brk + brk;
@@ -552,11 +601,11 @@ function showMenu(skip){
 					drawShipMenu(divs[i], i, indexArr[i], colorArr[i]);
 				}
 			}
-			if(!monet)
+			if (!monet)
 				divs[11].className = "saturate";
 
 			setTimeout(() => {
-				if(!menuCount) menuCount = 1;
+				if (!menuCount) menuCount = 1;
 				state = 1;
 				animateMenuCursor();
 			}, 100);
@@ -574,7 +623,7 @@ function animateMenuCursor(){
 			let l = menuID < 6 ? 664 : 880;
 			gameContext.beginPath();
 			gameContext.rect(70+k*160, l, 156, 156);
-			gameContext.strokeStyle = menuCount%2==0?'#fff':'grey';
+			gameContext.strokeStyle = menuCount%2==0?'#fff':'#888';
 			gameContext.setLineDash([menuCount%(menuCount%2)==0, menuCount%(menuCount%3), menuCount%(menuCount%4)]);
 			gameContext.lineWidth = menuCount%2==0?4:6;
 			gameContext.stroke();
@@ -637,9 +686,9 @@ function pickMenu(evt) {
 						<div style=position:relative;width:420px;float:right;text-align:center>${shipWeapons[weaponType]+brk}<span style=top:40px;position:relative;font-size:50px>Level: ${powerArr[weaponType]}</span></div>
 					</div>`;
 		html += "<div style=line-height:52px;top:25px;>______" + brk + brk;
-		html += "Health: "+bar((weaponType == 2 ? 5 : healthMax-60) / 5) + brk;
+		html += "Health: "+bar((healthMax-60) / 5) + brk;
 		html += "Shield: "+bar(1 + shieldMax / 5) + brk;
-		html += "&nbsp;Speed: "+bar(parseInt((shipSpeed-3.5))*2) + brk;
+		html += "&nbsp;Speed: "+bar((shipSpeed-3)*2) + brk;
 		html += "&nbsp; Size: " + bar(1+parseInt((shipRadius-50) / 6));
 		html += "</div>";
 
@@ -663,7 +712,6 @@ function hideMenu(){
 	titlebottom.style.opacity = 0;
 	transitionMenu(0, -120);
 	central.innerHTML = "";
-	playing = true;
 	state = 3;
 	setTimeout(
 		()=>{
@@ -671,6 +719,8 @@ function hideMenu(){
 			generateButtons();
 			controls.style.display = 'block';
 			controls.style.bottom = 0;
+			generate();
+			playing = true;
 			setTimeout(hideTitle, 250);
 		}, 250
 	);
@@ -683,13 +733,11 @@ function hideTitle(){
 }
 
 function startGame() {
-	generate();
+	playing = true;
 	state = 4;
 	effectsCanvas.style.opacity = 1;
 	bgrCanvas.style.opacity = 1;
-	addEventListeners();
 	controls.style.display = 'block';
-
 	updateUI();
 	//FX.d(5, 1);
 }
@@ -737,14 +785,6 @@ function drawTitle(container, titleArr, baseLeft, baseTop, scale, className){
 }
 // ____________________________________
 
-
-function addEventListeners(){
-	leftBtn.addEventListener(event, leftTap, {passive: true});
-	rightBtn.addEventListener(event, rightTap, {passive: true});
-	centralBtn.addEventListener(event, centerTap, {passive: true});
-
-	window.addEventListener(eventEnd, checkTapEnd);
-}
 
 function checkTapEnd(evt) {
 	if (evt.target == leftBtn) leftPressed = false; else if (evt.target == rightBtn) rightPressed = false;
@@ -836,7 +876,7 @@ function reset(nextLevel) {
 	menu.style.opacity = 1;
 	overlay.style.opacity = 1;
 	controls.style.display = 'none';
-	effectsCanvas.style.opacity = 0.5;
+	effectsCanvas.style.opacity = 0;
 	bgrCanvas.style.opacity = 0.5;
 	showMenu(1);
 }
@@ -850,7 +890,7 @@ function togglePause(forcePause) {
 	}
 }
 
-function keyDownHandler(e) {console.log(state, e.keyCode);
+function keyDownHandler(e) {//console.log(state, e.keyCode);
 	triggerKey(e.keyCode);
 }
 
@@ -867,6 +907,8 @@ function triggerKey(key) {
 			pickMenu();
 	}
 
+	if (gameOver) return;
+
 	// R
 	if(state == 5 || key == 82) {
 		if(!running) togglePause();
@@ -881,7 +923,7 @@ function triggerKey(key) {
 		if(pwr<6) {
 			pwr ++;
 			powerArr[weaponType] ++;
-			console.log("pwr:"+pwr);
+			//console.log("pwr:"+pwr);
 		}
 		updateStats();
 	}
@@ -905,7 +947,7 @@ function triggerKey(key) {
 		constantShoot = !constantShoot;
 	}
 
-	// D
+	// D - right
 	if(key == 39 || key == 68) {
 		if(state<3) {
 			menuID ++;
@@ -916,7 +958,7 @@ function triggerKey(key) {
 			rightPressed = true;
 	}
 
-	// A
+	// A - left
 	if(key == 37 || key == 65) {
 		if(state<3) {
 			menuID --;
@@ -927,7 +969,7 @@ function triggerKey(key) {
 			leftPressed = true;
 	}
 
-	// W
+	// W - up
 	if(key == 38 || key == 87) {
 		if(state<3) {
 			menuID -=6;
@@ -937,7 +979,7 @@ function triggerKey(key) {
 		}// else upPressed = true;
 	}
 
-	// S
+	// S - down
 	if(key == 40 || key == 83) {
 		if(state<3) {
 			menuID += 6;
@@ -1018,14 +1060,14 @@ function generate() {
 			let x = ((i % 10) > 5 ? -600 + (i % 10) * 120 : 0) * (!j?1:-1) + (!j?0:1080);
 			let t = parseInt(i/10) * 50 + ((i % 10) > 8 ? 1000 : 0);
 			let a = (i % 10) > 7 ?  i%3==0 ? 1 : 0.25 : 0.25;
-			let type = (i % 10) > 7 ? 8 : 2;
+			let type = 2;//(i % 10) > 7 ? 8 : 2;
 			let poly = 0;
 			let hp = 50;
 			let size = 10;
 			let collision = 10;
 			let anim = 0;
 			let speed = 2;
-			if (!level) {
+			/*if (!level) {
 				if (!j) {
 					type = i % 2 == 0 ? 0 : i % 4 == 0 ? 0 : 1 + parseInt(random()*4) - 1;
 					poly = (!type) ? 5 + parseInt(random()*3) : 1;
@@ -1048,9 +1090,9 @@ function generate() {
 					}
 					if(type > 2) count ++;
 				}
-			}
-			else if (level==2)
-				type = 8;
+			}*/
+			//else if (level==2)
+				//type = 8;
 
 			if(!j || level) {
 				if(random() > 0.25)
@@ -1075,29 +1117,29 @@ function generate() {
 		}
 	}
 
-
-	for(j = 0; j < 4; j++) {
-		for(i = 0; i < 3; i++) {
+	// boss
+	/*for(let j = 0; j < 4; j++) {
+		for(let i = 0; i < 3; i++) {
 			if (j==1 || (!j&&(!i||i==2)) || (j==2&&(i==1)))
 				enemies.push({
 					a:         0,             // enemy exploding counter
-					type:      j==2?8:6,             // type
+					type:      j==2?7:i%2==0&&j%2!=0 ? 12 : 6,      // type
 					x:         400 + i * 120,
 					y:         -300 + j * 80,
-					z:         0,             // for mines - the number of polygons
-					health:    i==1&&j==1?5000:1000,
-					maxHealth: i==1&&j==1?5000:1000,
-					size:      20,
-					collision: 20,
-					speed:     2,
-					animation: 0,
+					z:         0,
+					health:    j==2?100:1000,//i==1&&j==1?1500:500,
+					maxHealth: j==2?100:1000,//i==1&&j==1?1500:500,
+					size:      75,
+					collision: 0,
+					speed:     6,
+					animation: 0,//100
 					timeout:   200,
 					color:     2,
 					alpha:     j!=2?0.75:1,
 					cargo:     j
 				});
 		}
-	}
+	}*/
 }
 
 Math.radians = function(degrees) {
@@ -1128,65 +1170,61 @@ function moveMissiles(){
 			}
 		} else {
 			missile.moveByAngle();
-			if (missile.y < 0 || missile.y > gameCanvas.height || missile.x < 0 || missile.x > gameCanvas.width) {
+			if (missile.y < -40 || missile.y > gameCanvas.height || missile.x < 0 || missile.x > gameCanvas.width) {
 				missiles.splice(i,1);
 				len = missiles.length-1;
 			}
-			else if (!missile.type) {
-				if(missile.angle>0.1||missile.angle<-0.1)
-					missile.angle*=0.5;
-			}
-			else if (missile.type==4 || missile.type==1) {
+			else if (missile.type==1 || missile.type==4 || missile.type==10) {
 				missile.speed*=1.01;
 				missile.angle*=0.9;
 			}
 
-			if(missile.type == 1 && missile.pulse > -1)
+			if (missile.type == 1 && missile.pulse > -1) {
 				missile.angle=360*random();
+			}
 		}
 	}
 }
-function drawMissiles(){
-	if(missiles.length){
+function drawMissiles() {
+	if (missiles.length) {
 		len = missiles.length;
-		for(let i = 0; i < len; i++){
-			drawMissile(i);
+		for(let i = 0; i < len; i++) {
+			if (missiles[i].pulse > -1) {
+				missiles[i].blow(drawExplosion, 0.5);// consider clouds
+			}
+			missiles[i].draw(drawUnit, gameContext, effectsContext, addEffect, random);
 		}
 	}
-}
-function drawMissile(i){
-	missile = missiles[i];
-	if(missile.pulse > -1) missile.blow(drawExplosion, missile.type==3 ? missile.pulse / missile.blowSize < 0.25 ? 0.5 : 0.1+missile.pulse / missile.blowSize : 0.1+missile.pulse / missile.blowSize);
-	missile.draw(drawUnit, gameContext, 0, effectsContext);
 }
 
-function movePowerups(){
-	for(let i = 0; i<powerups.length; i++){
+function movePowerups() {
+	for(let i = 0; i < powerups.length; i++) {
 		powerup = powerups[i];
-		if(powerup.type){
-			if(powerup.a){
+		if (powerup.type) {
+			if (powerup.a) {
 				powerup.y += powerup.speed*globalSpeed;
-				if(powerup.y > gameCanvas.height+powerup.size){
+				if (powerup.y > gameCanvas.height+powerup.size) {
 					powerup.type = 0;
 					powerup.a = 0;
 				}
 			}
 		}
-		/*if(powerup.a){
-			if(powerup.type<1)
+		if (powerup.a) {
+			if (powerup.type<1)
 				powerup.a++;
+
 			powerup.y += powerup.speed*globalSpeed;
-			if(powerup.y > gameCanvas.height+powerup.size || powerup.a>150){
-				powerup.type=0;
-				powerup.a=0;
+			if (powerup.y > gameCanvas.height+powerup.size || powerup.a > 100) {
+				powerup.type = 0;
+				powerup.a = 0;
 			}
-		}*/
+		}
 	}
 }
 function drawPowerups(){
 	for(let i = 0; i<powerups.length; i++){
 		powerup = powerups[i];
-		/*if(powerup.a){
+		if(powerup.a){
 			if(powerup.type){
 				gameContext.beginPath();
 				gameContext.fillStyle = (powerup.type==1) ? "#cb4" : (powerup.type==2) ? "#292" : (powerup.type==5) ? "#09d" : "#5a8";
@@ -1202,17 +1240,7 @@ function drawPowerups(){
 
 			gameContext.font = "bold 28px Arial";
 			gameContext.fillStyle = powerup.type ? "#000" : powerup.a> 125 ? powerup.a> 140 ? "#888" : "#aaa" : "#ccc";
-			gameContext.fillText([powerup.txt,".Att",".Hp+",".Sh+",".Sp+",".Sz+",".Ms"][powerup.type], powerup.x-powerup.size, powerup.y-powerup.size*0.25);
-		}*/
-		if(powerup.type && powerup.a){
-			gameContext.beginPath();
-			gameContext.arc(powerup.x-powerup.size/(powerup.type==2||powerup.type==5?4:3), powerup.y-powerup.size/2, powerup.size/(powerup.type==2||powerup.type==5?1.75:1.5), 0, Math.PI*2);
-			gameContext.fillStyle = (powerup.type==1) ? "#CC2939" : (powerup.type==2) ? "#199919" : (powerup.type==5) ? "#0095DD" : "#59aa89";
-			gameContext.fill();
-			gameContext.closePath();
-			gameContext.font = "bold 28px Arial";
-			gameContext.fillStyle = "#ffffff";
- 			gameContext.fillText(["A","+","+","S","M","R"][powerup.type-1], powerup.x-powerup.size*[0.54, 0.51, 0.52, 0.62, 0.51][powerup.type-1], powerup.y-powerup.size * 0.25);
+			gameContext.fillText([powerup.txt,".Att",".Hp+",".Sh+",".Sp+",".Sz+",".Ms"][powerup.type+1], powerup.x-powerup.size, powerup.y-powerup.size*0.25);
 		}
 	}
 }
@@ -1223,13 +1251,29 @@ function moveEnemies() {
 		enemy = enemies[i];
 		if(enemy.health){
 			if(step > enemy.timeout){
-				enemy.y += enemy.speed*globalSpeed;
-				if(enemy.y > gameCanvas.height+enemy.size){// an enemy has passed the full height of the screen
-					if(enemy.type) perfect = false;
-					enemy.y = -200;
-					enemy.timeout += 1000-level*(level < 5 ? 100 : 50);
-					enemy.health = enemy.maxHealth;
-					enemy.x = parseInt(gameCanvas.width*0.05+random()*gameCanvas.width*0.9);
+				if (enemy.type >= 5 && enemy.size == 75) {
+					// boss enter move left/right
+					let slowing = enemy.timeout / step;
+					if (slowing > 0.5) {
+						slowing = ((slowing - 0.5) * 20 | 0) / 10;
+						enemy.y += enemy.speed * globalSpeed * slowing;
+					} else {
+						if (slowing > 0.4) {
+							slowing = ((slowing - 0.4) * 100 | 0) / 10;
+						} else slowing = 0;
+						enemy.x += ((step / 300 | 0) % 2) * 2 - 1 - slowing;
+					}
+				} else {
+					// normal enemy
+					enemy.y += enemy.speed*globalSpeed;
+					if(enemy.y > gameCanvas.height+enemy.size && enemy.type < 3) {
+						// an enemy has passed the full height of the screen
+						if(enemy.type) perfect = false;
+						enemy.y = -200;
+						enemy.timeout += 1000-level*(level < 5 ? 100 : 50);
+						enemy.health = enemy.maxHealth;
+						enemy.x = parseInt(gameCanvas.width*0.05+random()*gameCanvas.width*0.9);
+					}
 				}
 			}
 		}
@@ -1240,13 +1284,14 @@ function drawEnemies() {
 	for(let i = 0; i < enemies.length; i++){
 		enemy = enemies[i];
 		if(enemy.y > -149 && (enemy.health || enemy.a>1)){
+			// draw meteor mine
 			if(!enemy.type) {
 				gameContext.save();
 				gameContext.translate(enemy.x, enemy.y);
 				gameContext.globalAlpha = enemy.alpha;
 				let k = (enemy.z==5) ?  1 : 2;
 				if (k==1 && step%2==0) gameContext.scale(-1, 1);
-				gameContext.rotate(Math.radians(k-1 ? (enemy.x%2==0 ? step : -step) % 360 : 230 + (step%2==0 ? random()*20 : 10)));
+				gameContext.rotate(Math.radians(k-1 ? (enemy.x%2==0 ? step : -step) % 360 : 235));
 				gameContext.beginPath();
 				gameContext.strokeStyle = "#900";
 				gameContext.lineWidth = 10*k - parseInt((enemy.size-25)/2);
@@ -1254,29 +1299,36 @@ function drawEnemies() {
 				for (let j = 1; j <= enemy.z; j ++) {
 					gameContext.lineTo(enemy.size/k*Math.cos(j*2*Math.PI/enemy.z), enemy.size/k*Math.sin(j*2*Math.PI/enemy.z));
 				}
+				gameContext.closePath();
 				gameContext.stroke();
 				gameContext.fillStyle = "#d33";
 				gameContext.fill();
-				gameContext.closePath();
+				
 				gameContext.globalAlpha = 1/k*enemy.alpha;
 				gameContext.beginPath();
 				gameContext.fillStyle = "#f88";
 				gameContext.moveTo(0, 0);
 				if(enemy.health>0) {
-					gameContext.lineTo(0, -10*k);
-					gameContext.lineTo(10*k, 0);
+					gameContext.lineTo(0, -6*k);
+					gameContext.lineTo(6*k, 0);
 				}
 				if(enemy.health>1){
-					gameContext.lineTo(-10*k, 0);
-					gameContext.lineTo(0, 10*k);
+					gameContext.lineTo(-6*k, 0);
+					gameContext.lineTo(0, 6*k);
 				}
 				if(enemy.health>2) {
-					gameContext.lineTo(0, -10*k);
-					gameContext.lineTo(-10*k, 0);
+					gameContext.lineTo(0, -6*k);
+					gameContext.lineTo(-6*k, 0);
 				}
 				if(enemy.health>3){
-					gameContext.lineTo(0, 10*k);
-					gameContext.lineTo(10*k, 0);
+					gameContext.lineTo(0, 6*k);
+					gameContext.lineTo(6*k, 0);
+				}
+				if (k == 1) {
+					// add trail particles on the faster meteors (pentagon shaped)
+					gameContext.strokeStyle = "#b30";
+					gameContext.stroke();
+					addEffect(enemy, 12, 4, 1, 2, 0, -10);
 				}
 				gameContext.fill();
 				gameContext.closePath();
@@ -1288,7 +1340,7 @@ function drawEnemies() {
 				drawUnit(gameContext, enemy.type, enemy.type, enemy.color, enemy.animation, enemy.x, enemy.y - enemy.size/2, true, size);
 				gameContext.globalAlpha = 1;
 
-				if(enemy.type == 3) {
+				if(enemy.type >= 2) {
 					// draw health bar
 					gameContext.beginPath();
 					gameContext.rect(enemy.x-2, enemy.y + 5, 4, ((enemy.size/enemy.maxHealth)*enemy.maxHealth)/2);
@@ -1306,26 +1358,36 @@ function drawEnemies() {
 			// enemy is exploding
 			if(enemy.a>1){
 				enemy.a--;
-				if(enemy.a<20){
+				if(enemy.a < 20){
 					enemy.y += enemy.speed*0.75;
 					enemy.size += 1;
 					enemy.alpha -= 0.05;
-					addEffect(enemy, weaponType, 1, (enemy.a%2==0 && enemy.a>8 ? 10 : 6), (enemy.a>8 ? enemy.a<16 ? enemy.a - 4 : 5 : 1 + enemy.a));
+					addEffect(enemy, 12, (enemy.a%2==0 && enemy.a>8 ? 10 : 6), (enemy.a>8 ? enemy.a<16 ? enemy.a - 4 : 5 : 1 + enemy.a));
+				} else if(enemy.a < 40){
+					enemy.y += enemy.speed*0.9;
+					enemy.x += random()*4-2;
+					enemy.y += random()*4-2;
+					addEffect(enemy, 12, 6, 3 + random() * 3);
+				} else if(enemy.a == 40 || enemy.a == 41){
+					enemy.y += enemy.speed*0.9;
+					enemy.x += random()*8-4;
+					enemy.y += random()*8-4;
+					addEffect(enemy, 6, 9, enemy.size/(4+(42 - enemy.a)*2), 1, 10, 25);
 				} else {
-					enemy.y+=enemy.speed*0.9;
-					enemy.x+=random()*4-2;
-					enemy.y+=random()*4-2;
-					if(enemy.a%2==0) addEffect(enemy, weaponType, 2, 6, 3 + random() * 3);
+					enemy.y += enemy.speed*0.9;
+					enemy.x += random()*2-1;
+					enemy.y += random()*2-1;
+					addEffect(enemy, 11 + (enemy.a%2), 3 + random() * 4, 15);
 				}
 			}
 		}
 	}
 }
 
-function addEffect(element, type, del, total, size, offsetx = 0, offsety = 0){
+function addEffect(element, type, total, size, spread = 1, offsetx = 0, offsety = 0) {
 	effects.push({
-		x:     offsetx+element.x+10+(element.size*random()*2)-element.size/del,
-		y:     offsety+element.y+(element.size*random()*2)-element.size/del,
+		x:     element.x + offsetx + ((element.size*random()*2)-element.size) / spread,
+		y:     element.y + offsety + ((element.size*random()*2)-element.size) / spread,
 		frame: 0,
 		total: total,
 		size:  size,
@@ -1353,14 +1415,14 @@ function drawEffects() {
 	}
 }
 
-function drawExplosion(x, y, s, c1 = '#ff0', c2 = 'red', a = 1) {
+function drawExplosion(x, y, s, c1, c2, a = 1) {
 	effectsContext.beginPath();
+	effectsContext.fillStyle = '#'+c1;
 	effectsContext.globalAlpha = a;
 	effectsContext.arc(x, y, s, 0, 2 * Math.PI, false);
-	effectsContext.fillStyle = c1;
 	effectsContext.fill();
 	effectsContext.lineWidth = 2;
-	effectsContext.strokeStyle = c2;
+	effectsContext.strokeStyle = '#'+c2;
 	effectsContext.stroke();
 	effectsContext.closePath();
 	effectsContext.globalAlpha = 1;
@@ -1410,6 +1472,7 @@ function draw() {
 				if(!weaponType) {
 					missiles.push(getShot(PlayerCannon, 0, -38));
 				}
+
 				else
 				if(weaponType == 1) {
 					if(!pwr || pwr % 2 == 0) {
@@ -1428,15 +1491,20 @@ function draw() {
 					}
 				}
 				else
-				if(weaponType == 2 || weaponType == 6) {
-					missiles.push(getShot(PlayerLaser, random()*pwr - pwr/2, -shipRadius));
+				if(weaponType == 2 || weaponType == 6 || weaponType == 8) {
+					if (weaponType != 8 || (step%8>6-pwr || missiles.length < 1)) {
+						missiles.push(getShot(PlayerLaser,
+							weaponType == 8 ? step % 2 == 0 ? -50 : 50 : random()*pwr - pwr/2,
+							-shipRadius,
+							invulnerable || weaponType == 8 ? (random()*2)-1 : 0
+						));
+					}
 				}
 				else
 				if(weaponType == 3 || weaponType == 11){
 					missileCurrentCount += (weaponType == 11 ? pwr : pwr*2);
 					missiles.push(getShot(PlayerBlob, 0, -22, weaponType == 11 ? (leftPressed ? 5 : rightPressed ? -5 : 0) + pwr - random()*pwr*2 : 0, missileSpeed-1 + (weaponType==3?0.5:0.2)*pwr));
 				}
-
 				else
 				if(weaponType == 4 || weaponType == 10){
 					if(weaponType == 4) missileCurrentCount += pwr*3;
@@ -1475,19 +1543,15 @@ function draw() {
 				}
 				else
 				if(weaponType == 7){
-					if (pwr==1 || pwr >= 3) {
-						missiles.push(getShot(PlayerMissile, -30+(pwr==3||pwr==4?8:0)));
-						missiles.push(getShot(PlayerMissile, 30-(pwr==3||pwr==4?8:0)));
+					if (pwr==2 || pwr >= 4) {
+						missiles.push(getShot(PlayerMissile, -30+(pwr==3||pwr==4?8:0), -50));
+						missiles.push(getShot(PlayerMissile, 30-(pwr==3||pwr==4?8:0), -50));
 					}
-					if (pwr==2 || pwr>=3 ) {
-						missiles.push(getShot(PlayerMissile, -60, 30));
-						missiles.push(getShot(PlayerMissile, 60, 30));
+					if (pwr >= 3) {
+						missiles.push(getShot(PlayerMissile, -60, -20));
+						missiles.push(getShot(PlayerMissile, 60, -20));
 					}
-					if(pwr==2 || pwr>4) missiles.push(getShot(PlayerMissile, 0, -30));
-				}
-				else
-				if(weaponType == 8){
-					missiles.push(getShot(PlayerLaser, random()*pwr - pwr/2, -shipRadius, leftPressed ? -30 : rightPressed ? 30 : 0));
+					if(pwr == 1 || pwr==3 || pwr>4) missiles.push(getShot(PlayerMissile, 0, -80));
 				}
 			}
 
@@ -1507,159 +1571,178 @@ function draw() {
 	}
 
 	drawFPS();
-	if(running) requestAnimationFrame(draw);
-	else {// paused
-		effectsContext.globalAlpha = 0.6;
-		effectsContext.fillStyle = "#000";
-		effectsContext.rect(0, 0, gameCanvas.width/5, gameCanvas.height/5);
-		effectsContext.fill();
-		effectsContext.globalAlpha = 1;
-		effectsContext.font = "bold 12px Arial";
-		effectsContext.fillStyle = "#fff";
- 		effectsContext.fillText("Game paused", 72, 160);
+	if (running) requestAnimationFrame(draw);
+	else if (!gameOver) {
+		//fadePixelatedOverlay();
+		addPixelatedOverlay("Game paused", 55, 160);
 	}
 }
+function fadePixelatedOverlay() {
+	effectsContext.globalAlpha = 0.6;
+	effectsContext.fillStyle = "#000";
+	effectsContext.rect(0, 0, gameCanvas.width/5, gameCanvas.height/5);
+	effectsContext.fill();
+}
+function addPixelatedOverlay(txt, x, y, font = "bold 16") {
+	effectsContext.globalAlpha = 1;
+	effectsContext.font = font + "px Arial";
+	effectsContext.fillStyle = "#fff";
+	effectsContext.fillText(txt, x, y);
+}
 
-function getShot(c, x = 0, y = 0, r = 0, s = 0){
-	return new c(shipX+x, shipY+y, r, s || missileSpeed, missileSize, pwr, weaponType, lightColors[weaponType], darkColors[weaponType]);
+function getShot(missileClass, x = 0, y = 0, r = 0, s = 0, baseX = shipX, baseY = shipY) {
+	return new missileClass(baseX+x, baseY+y, r, s || missileSpeed, missileSize, pwr, weaponType, lightColors[weaponType], darkColors[weaponType]);
 }
 
 function checkForDeath(enemy, missile) {
 	let type;
 	if (!missile) type = 1;
-	if(enemy.health < 0) enemy.health = 0;
-	if(!enemy.health) {
-		enemy.a = (type == 3 && enemy.type) || (!enemy.type && !type) ? 50 : 30;
-		if(enemy.cargo) {
+	if (enemy.health < 0) enemy.health = 0;
+	if (!enemy.health) {
+		enemy.a = 43 + (enemy.type>2 ? (enemy.type-2)*2 : 0);
+		if (enemy.cargo) {
 			powerups[enemy.cargo].x = enemy.x;
 			powerups[enemy.cargo].y = enemy.y;
 			powerups[enemy.cargo].a = 1;
+			powerups[enemy.cargo].txt = shipNames[enemy.type]+".png";
 		}
 	}
 
-	if(!enemy.health) {
-		score+=(enemy.maxHealth>5?parseInt(enemy.maxHealth/5)+4:2)*5;
+	if (!enemy.health) {
+		score += (enemy.maxHealth>5?parseInt(enemy.maxHealth/5)+4:2)*5;
 	}
 
 	checkGameOver();
 }
 
 function reloadOnGameOver(){
-	if(gameOver) {
-		if(gameOver == 2) {
-			//writeHash(0);
-			location.reload();
-		}
+	if(gameOver == 3) {
+		//writeHash(0);
+		location.reload();
 	}
 }
 
-function checkGameOver(){
-	let hasEnemies;
-	let len = enemies.length;
-	for(let i = 0; i < len; i++) {
-		enemy = enemies[i];
-		if(enemy.health) {
-			hasEnemies = true;
-			break;
-		}
-	}
-	if(health <= 0 || !hasEnemies) {
-		state = 4;
-		let timeout = setTimeout(
-			()=> {
-				clearTimeout(timeout);
-				if (playing) {
-					central.innerHTML = "";
-					playing = false;
-					leftPressed = false;
-					rightPressed = false;
-					spacePressed = false;
-					gameContext.beginPath();
-					gameContext.globalAlpha = 0.6;
-					gameContext.fillStyle = "#000";
-					gameContext.rect(0, 0, gameCanvas.width, gameCanvas.height);
-					gameContext.fill();
-					gameContext.globalAlpha = 1;
-					gameContext.closePath();
-					gameContext.font = "92px Arial";
-					gameContext.fillStyle = "#fff";
-					gameContext.fillText("Stage Cleared!", 230, 460);
-					gameContext.font = "64px Arial";
-					let bonus = -1;
-					let hidden = [];
-					for(let i = 0; i < powerArr.length; i++){
-						if (!powerArr[i]) {
-							bonus = i;
-							hidden.push(i);
-						}
-					}
-
-					if(hidden.length>6) {
-						bonus = hidden[parseInt(random()*hidden.length-1)];
-					}
-					if(bonus > -1) {
-						let canvas = drawShipMenu(central, bonus, indexArr[bonus], colorArr[bonus])[0];
-						canvas.style.left = "36%";
-						canvas.style.top = "240px";
-						canvas.style.width = "320px";
-						canvas.style.height = "320px";
-						overlay.style.opacity = 1;
-						if (master) gameContext.fillText("Master!", 50, 1000);
-						if (perfect) gameContext.fillText("Perfect!", 800, 1000);
-						gameContext.fillText("You found a missing game file!", 115, 650);
-						gameContext.fillText(shipNames[bonus]+".png", 440, 750);
-						powerArr[bonus] = 1;
-					}
-					gameContext.fillText("Tap screen for Menu", 255, 1400);
-					effectsCanvas.style.opacity = 0.5;
-					bgrCanvas.style.opacity = 0.5;
+function checkGameOver(_force){
+	if (!gameOver) {
+		if(health <= 0 || _force) {
+			gameOver = 1;
+			invulnerable = 900;
+			healthbar.style.width = 0;
+		} else {
+			let hasEnemies;
+			let len = enemies.length;
+			for(let i = 0; i < len; i++) {
+				enemy = enemies[i];
+				if (enemy.health) {
+					hasEnemies = true;
+					break;
 				}
-			}, 3000
-		);
+			}
+			if (!hasEnemies) {
+				gameOver = 2;
+				health = healthMax;
+				shield = shieldMax;
+				updateUI();
+			}
+		}
+		if (gameOver) {
+			leftPressed = false;
+			rightPressed = false;
+			slowCount = 0;
+			let interval = setInterval(
+				()=> {
+					slowCount ++;
+					slowing = Math.ceil(slowCount / 5);
+					if (slowCount == 20) {
+						clearInterval(interval);
+						running = false;
+						fadePixelatedOverlay();
+						if (gameOver == 1) {
+							addPixelatedOverlay("Game Over", 70, 140);
+						} else {
+							let bonus = -1;
+							let hidden = [];
+							for(let i = 0; i < powerArr.length; i++) {
+								if (!powerArr[i]) {
+									bonus = i;
+									hidden.push(i);
+								}
+							}
+
+							if (hidden.length > 6) {
+								bonus = hidden[parseInt(random()*hidden.length-1)];
+							}
+
+							if (bonus > -1) {
+								let canvas = drawShipMenu(central, bonus, indexArr[bonus], colorArr[bonus])[0];
+								canvas.style.left = "34%";
+								canvas.style.width = "320px";
+								canvas.style.height = "320px";
+								overlay.style.opacity = 1;
+								addPixelatedOverlay("Stage Cleared!", 50, 80);
+								if (master) addPixelatedOverlay("Master!", 20, 160, 10);
+								if (perfect) addPixelatedOverlay("Perfect!", 164, 160, 10);
+								addPixelatedOverlay("You found a missing game file!", 40, 220, 10);
+								addPixelatedOverlay(shipNames[bonus]+".png", 86, 240);
+
+								powerArr[bonus] = 1;
+							}
+						}
+						gameOver = 3;
+						addPixelatedOverlay("Tap screen for Menu", 64, 310, 10);
+					}
+				}, 120
+			);
+		}
 	}
 }
 
 function collisionDetection(i, len2, len) {
+	// check for player ship vs enemy ship collision
 	len = enemies.length;
 	for(let i = 0; i < len; i++) {
 		enemy = enemies[i];
-		if(enemy.type < 5 && enemy.health && !invulnerable){
-			if(circlesColliding(enemy.x, enemy.y, enemy.collision, shipX, shipY, shipRadius)) {
+		if (enemy.type < 5 && enemy.health && !invulnerable && enemy.y < shipY) {
+			if (circlesColliding(enemy.x, enemy.y, enemy.collision, shipX, shipY, shipRadius)) {
 				enemy.health = 0;
-				enemy.a = 40;
+				enemy.a = 60;
 				killedArr[enemy.type] ++;
 				let damage = [25, 30, 50, 100][enemy.type];
-				if(shield>damage) {
+				if (shield>damage) {
 					shield-=damage;
 					invulnerable = 5;
-					shielded = true;
+					//shielded = true;
 				} else {
 					health -= (damage - shield);
 					shield = 0;
 					invulnerable = 50;
-					hurt = true;
-					shielded = true;
+					//hurt = true;
+					//shielded = true;
 				}
 				updateUI();
 				checkForDeath(enemy);
 			}
 		}
 	}
+
+	// check for player missile vs enemy ship collision
 	len2 = missiles.length - 1;
 	for(let i = len2; i >= 0; i--) {
 		missile = missiles[i];
 		for(let j = 0; j < len; j++) {
 			enemy = enemies[j];
-			if(enemy.y > -50 && enemy.health && missile.pulse == -1) {
-				if(circlesColliding(missile.x, missile.y - (missile.type==2 ? 60 : missile.type==6 ? 40 : 20), missile.size + (missile.type%3==0?missile.type+pwr:missile.type==11?2*pwr:0), enemy.x, enemy.y, enemy.size)) {
+			if (enemy.y > -50 && enemy.health && missile.pulse == -1) {
+				if (circlesColliding(missile.x, missile.y, missile.size + (missile.type == 3 ? pwr*2:0), enemy.x, enemy.y, enemy.size)) {
 					enemy.health -= missileDamage + (pwr-1)*missileDamage/(!missile.type||missile.type==6?0.3:missile.type==9||missile.type==11?0.5:2) + missileDamage*missileDamage;
 					missile.pulse = missile.blowSize;
 
-					if (missile.type > 2 && missile.type < 5 && missile.y>100) {
+					if ((missile.type == 3 || missile.type == 4) && missile.y>100) {
 						for(let k = 0; k < len; k++) {
 							let enemy2 = enemies[k];
 							if (enemy2.health) {
-								if (circlesColliding(missile.x, missile.y - 20, missile.size*5*pwr/(missile.type==4?3:1), enemy2.x, enemy2.y, enemy2.size)) {
+								if (circlesColliding(missile.x, missile.y, missile.size*2*pwr*(missile.type==3?2:1), enemy2.x, enemy2.y, enemy2.size)) {
+									// add detonation explosion when multiple targets blow
+									addEffect(missile, weaponType, 6, (missile.type==3?missile.size+pwr:2+pwr), 2, 10);
 									enemy2.health -= missileDamage + (missile.type == 1 ? 0 : missileDamage*pwr/4);
 									checkForDeath(enemy2, missile);
 								}
@@ -1667,43 +1750,33 @@ function collisionDetection(i, len2, len) {
 						}
 					}
 
-					addEffect(missile, weaponType, 1, 6, 4 + random() * 2, 0, missile.type==1 ? random()*-40 : 0);
+					// add small explosion when the bullet (beam,rocket,etc.) hits the target
+					addEffect(missile, weaponType, 4 + random() * 2, 2 + pwr/2 + random() * 4, missile.size/2, 10);
 
-					if(missile.type == 3) {
-						addEffect(missile, weaponType, 1, 6, 4 + random()*4, -2 + random()*4, -2 + random()*4);
-						addEffect(missile, weaponType, 1, 6, 4 + random()*4, -2 + random()*4, -2 + random()*4);
+					/*if(missile.type == 3) {debugger
+						addEffect(missile, weaponType, 6, 4 + random()*4, 1, -2 + random()*4, -2 + random()*4);
+						addEffect(missile, weaponType, 6, 4 + random()*4, 1, -2 + random()*4, -2 + random()*4);
+					}*/
+
+					if (missile.type == 8) {
+						missiles.push(getShot(PlayerLaser, 0, -shipRadius/3, -40 + random()*80, 0, missile.x, missile.y));
+						enemy.health += missileDamage;
 					}
 
-					if(enemy.health<=0 && missile.type==6) {
-						addEffect(missile, weaponType, 1, 6, 9 + random() * 2, 0, missile.type==1 ? random()*-40 : 0);
-						missiles.push(new PlayerLaser(
-								missile.x,
-								missile.y-shipRadius/2,
-								-30,
-								missileSpeed,
-								missileSize,
-								pwr * (5+enemy.maxHealth+pwr) / 5,
-								6
-							)
-						);
-						missiles.push(new PlayerLaser(
-								missile.x,
-								missile.y-shipRadius/2,
-								30,
-								missileSpeed,
-								missileSize,
-								pwr * (5+enemy.maxHealth+pwr) / 5,
-								6
-							)
-						);
+					if (enemy.health <= 0) {
+						if (missile.type == 6) {
+							//addEffect(missile, weaponType, 6, 9, 1);
+							missiles.push(getShot(PlayerLaser, 0, -shipRadius/2, -30, 0, missile.x, missile.y));
+							missiles.push(getShot(PlayerLaser, 0, -shipRadius/2, 30, 0, missile.x, missile.y));
+						}
 					}
-
 					checkForDeath(enemy, missile);
 				}
 			}
 		}
 	}
 
+	// check powerup takeup
 	for(let i = 0; i < powerups.length; i++) {
 		powerup = powerups[i];
 		if(powerup.a){

@@ -1,5 +1,5 @@
 // register ServiceWorker
-var debug = false;
+var debug = true;
 
 window.addEventListener("load", registerSW);
 

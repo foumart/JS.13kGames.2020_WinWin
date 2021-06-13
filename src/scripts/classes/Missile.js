@@ -1,6 +1,6 @@
 class Missile {
 
-	constructor(type, x, y, angle, speed, size, pwr, darkColor = "109", lightColor = "32c") {
+	constructor(type, x, y, angle, speed, size, pwr, darkColor, lightColor) {
 		this.type = type;
 		this.pwr = pwr;
 		this.x = x;
@@ -18,15 +18,15 @@ class Missile {
 
 	moveByAngle() {
 		let rad = Math.radians(this.angle % 360);
-		this.x += this.speed*Math.sin(rad);
-		this.y -= this.speed*Math.cos(rad);
+		this.x += this.speed * Math.sin(rad);
+		this.y -= this.speed * Math.cos(rad);
 	}
 
 	blow(drawExplosion, alpha) {
 		drawExplosion(
-			missile.x/this.s,
-			missile.y/this.s,
-			missile.size * missile.pulse / this.s,
+			this.x / this.s,
+			this.y / this.s,
+			this.size * this.pulse / this.s,
 			this.lightColor,
 			this.darkColor,
 			alpha
