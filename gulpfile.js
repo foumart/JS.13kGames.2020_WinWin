@@ -1,4 +1,5 @@
 const { src, dest, series } = require('gulp');
+const gulp = require('gulp');
 const minify = require("gulp-minify");
 const concat = require("gulp-concat");
 const htmlmin = require("gulp-htmlmin");
