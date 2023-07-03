@@ -265,8 +265,8 @@ let images = [];
 let imagesMirrored = [];
 
 let stages = [
-	[200, 400],
-	[100, 100]
+	[5, 10],
+	[50, 10]
 ];
 
 function init(){
@@ -293,7 +293,11 @@ function init(){
 	document.addEventListener("keydown", keyDownHandler);
 	document.addEventListener("keyup", keyUpHandler);
 
-	requestAnimationFrame(checkMonetization);
+	//requestAnimationFrame(checkMonetization);
+	monet = 1;
+	updateStats();
+	central.innerHTML = "";
+	showMenu(1);
 
 	standalone = window.matchMedia('(display-mode: standalone)').matches;
 	if(standalone) console.log("[Event] Game is running as Standalone PWA.");
@@ -372,7 +376,7 @@ let FX = (function(){
 	return d;
 })();
 
-function checkMonetization() {
+/*function checkMonetization() {
 	if(document.monetization){
 		console.log("[Event] Web Monetization state:", document.monetization.state);
 		if(document.monetization.state == "started") monet = 1;
@@ -392,7 +396,7 @@ function checkMonetization() {
 		if(step < 100)
 			requestAnimationFrame(checkMonetization);
 	}
-}
+}*/
 
 function buffer() {
 	let i;
@@ -1058,14 +1062,14 @@ function generate() {
 	for(let j = 0; j < 2; j++) {
 		for(let i = 0; i < stages[level][0]; i++) {
 			let x = ((i % 10) > 5 ? -600 + (i % 10) * 120 : 0) * (!j?1:-1) + (!j?0:1080);
-			let t = parseInt(i/10) * 50 + ((i % 10) > 8 ? 1000 : 0);
-			let a = (i % 10) > 7 ?  i%3==0 ? 1 : 0.25 : 0.25;
+			let t = parseInt(i/10) * 50 + ((i % 10) > 8 ? 500 : 100);
+			let a = (i % 10) > 7 ? i%3==0 ? 1 : 0.1 : 0.1;
 			let type = 2;//(i % 10) > 7 ? 8 : 2;
 			let poly = 0;
 			let hp = 50;
 			let size = 10;
 			let collision = 10;
-			let anim = 0;
+			let anim = 10;
 			let speed = 2;
 			/*if (!level) {
 				if (!j) {
@@ -1094,8 +1098,8 @@ function generate() {
 			//else if (level==2)
 				//type = 8;
 
-			if(!j || level) {
-				if(random() > 0.25)
+			if (j < 3) {// || level
+				//if(random() > 0.25)
 					enemies.push({
 					a:         0,     // enemy exploding counter
 					type:      type,  // type
@@ -1104,21 +1108,41 @@ function generate() {
 					z:         poly,  // for mines - the number of polygons
 					health:    hp,
 					maxHealth: hp,
+					size:      (i % 10) > 5 ? 5 : 1 * size,
+					collision: (i % 10) > 5 ? 5 : 1 * collision,
+					speed:     speed,
+					animation: anim * 3,
+					timeout:   t,
+					color:     (i % 10) > 5 ? 0 : 2,//!level ? 2 : 0,
+					alpha:     a,
+					cargo:     false// && !j && type>2 ? powerups.length-1 : 0
+				});
+			}
+
+			if (a == 1) {// red enemy behind
+				enemies.push({
+					a:         0,     // enemy exploding counter
+					type:      (i % 10) > 7 ? 8 : 2,  // type
+					x:         x,
+					y:         -190,
+					z:         poly,  // for mines - the number of polygons
+					health:    hp,
+					maxHealth: hp,
 					size:      size,
 					collision: collision,
 					speed:     speed,
 					animation: anim,
 					timeout:   t,
-					color:     !level ? 2 : 0,
+					color:     2,
 					alpha:     a,
-					cargo:     !level && !j && type>2 ? powerups.length-1 : 0
+					cargo:     !j && type>2 ? powerups.length-1 : 0
 				});
 			}
 		}
 	}
 
 	// boss
-	/*for(let j = 0; j < 4; j++) {
+	for(let j = 0; j < 4; j++) {
 		for(let i = 0; i < 3; i++) {
 			if (j==1 || (!j&&(!i||i==2)) || (j==2&&(i==1)))
 				enemies.push({
@@ -1132,14 +1156,14 @@ function generate() {
 					size:      75,
 					collision: 0,
 					speed:     6,
-					animation: 0,//100
+					animation: 100,//100
 					timeout:   200,
-					color:     2,
-					alpha:     j!=2?0.75:1,
+					color:     5,
+					alpha:     j!=2?1:1,
 					cargo:     j
 				});
 		}
-	}*/
+	}
 }
 
 Math.radians = function(degrees) {
@@ -1702,7 +1726,7 @@ function collisionDetection(i, len2, len) {
 	len = enemies.length;
 	for(let i = 0; i < len; i++) {
 		enemy = enemies[i];
-		if (enemy.type < 5 && enemy.health && !invulnerable && enemy.y < shipY) {
+		if (enemy.type < 5 && enemy.health && !invulnerable && enemy.y < shipY && enemy.alpha == 1) {
 			if (circlesColliding(enemy.x, enemy.y, enemy.collision, shipX, shipY, shipRadius)) {
 				enemy.health = 0;
 				enemy.a = 60;
